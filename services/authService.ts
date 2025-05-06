@@ -1,5 +1,5 @@
 import { SignInWithOAuthCredentials } from "@supabase/supabase-js";
-import { supabase } from "./supabase";
+import { supabase } from "./supabaseService";
 
 export const signInWithKakao = async (
   credentials: SignInWithOAuthCredentials

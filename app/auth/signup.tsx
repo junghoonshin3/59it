@@ -18,6 +18,7 @@ import ConfirmButton from "@/components/confirmbutton";
 export default function SignUp() {
   const router = useRouter();
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const [nickName, setNickName] = useState("");
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
       "keyboardDidShow",
@@ -83,16 +84,17 @@ export default function SignUp() {
             icon={require("../../assets/images/name_field.png")}
             readOnly={false}
             error=""
-            value=""
-            onChangeText={() => {}}
+            value={nickName}
+            onChangeText={setNickName}
             className="mt-[20px]"
           />
         </View>
       </TouchableWithoutFeedback>
+
       <ConfirmButton
         className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px]"
         title="가입하기"
-        onPress={() => router.replace("/")}
+        onPress={() => router.replace("/maps")}
       />
     </KeyboardAvoidingView>
   );

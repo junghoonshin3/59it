@@ -1,21 +1,40 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { router } from "expo-router";
-import PagerView from "react-native-pager-view";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import PagerView, {
+  PagerViewOnPageSelectedEvent,
+  PagerViewOnPageSelectedEventData,
+} from "react-native-pager-view";
 import Slide from "../../components/slide";
 import "../../global.css";
-import { SafeAreaView } from "react-native-safe-area-context";
+import DotIndicator from "@/components/dotindicaotr";
+import { storage } from "@/utils/storage";
+import { useAuthStore } from "@/store/useAuthStore";
+
 export default function Onboarding() {
+  const session = useAuthStore((state) => state.session);
   // 온보딩이 끝났는지 확인하는 AsyncStorage
   const finishOnboarding = async () => {
-    await AsyncStorage.setItem("onboardingSeen", "true");
-    router.replace("/"); // 온보딩 끝나면 로그인으로
+    await storage.setBoolean("onboardingSeen", true);
+    if (session) {
+      router.replace("/maps"); // 이미 로그인을 한 경우 맵화면으로 이동
+    } else {
+      router.replace("/auth/signin"); // 로그인을 위해 signin 화면으로 이동
+    }
+  };
+
+  const [currentPage, setCurrentPage] = useState<number>(0);
+  const onPageSelected = (e: PagerViewOnPageSelectedEvent) => {
+    setCurrentPage(e.nativeEvent.position);
   };
 
   return (
     <View className="flex-1 bg-background">
-      <PagerView style={styles.pagerView} initialPage={0}>
+      <PagerView
+        style={styles.pagerView}
+        initialPage={0}
+        onPageSelected={onPageSelected}
+      >
         <View className="flex-1" key="1">
           <Slide
             title="나 이제 출발해~"
@@ -38,6 +57,7 @@ export default function Onboarding() {
           />
         </View>
       </PagerView>
+      <DotIndicator currentPage={currentPage} totalPages={3} />
       <Pressable
         onPress={finishOnboarding}
         className="h-[60px] bg-primary rounded-[16px] mb-[16px] ms-[32px] me-[32px] items-center justify-center"

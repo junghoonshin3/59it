@@ -13,7 +13,7 @@ module.exports = {
       colors: {
         // Add your custom colors here
         primary: "#0075FF",
-        background: "#1C1D1F",
+        background: "#181A20",
       },
     },
   },
