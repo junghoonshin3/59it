@@ -1,5 +1,16 @@
 import { TASK_NAME } from "@/constants/taskName";
 import * as Location from "expo-location";
+import * as TaskManager from "expo-task-manager";
+
+// TaskManager.defineTask(TASK_NAME.locationTask, async ({ data, error }) => {
+//   if (error) {
+//     console.error(`Location collection error: ${error.message}`);
+//     return;
+//   }
+//   const lastLocation = (data as { locations: Location.LocationObject[] })
+//     .locations[0];
+//   console.log("위치 데이터:", lastLocation);
+// });
 
 /**
  * Requests foreground and background location permissions.
@@ -33,6 +44,8 @@ export async function requestLocationPermissionsAsync() {
   };
 }
 
+export async function watchPositionAsync() {}
+
 /**
  * Starts background location updates if not already started.
  */
@@ -42,37 +55,29 @@ export async function startLocationUpdatesAsync() {
   );
 
   if (hasStarted) {
-    await Location.stopLocationUpdatesAsync(TASK_NAME.locationTask);
+    console.log("Background location already started.");
+    // await Location.stopLocationUpdatesAsync(TASK_NAME.locationTask);
     return;
   }
+  console.log("Background location updates started.");
 
   await Location.startLocationUpdatesAsync(TASK_NAME.locationTask, {
-    accuracy: Location.Accuracy.BestForNavigation,
-    timeInterval: 60 * 1000, // 1 minute
-    distanceInterval: 100, // 100 meters
+    accuracy: Location.Accuracy.Highest,
+    timeInterval: 1000,
+    distanceInterval: 1,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: "Tracking Location",
-      notificationBody: "App is collecting location in background",
+      notificationTitle: "Using your location",
+      notificationBody:
+        "To turn off, go back to the app and switch something off.",
     },
-    pausesUpdatesAutomatically: false,
   });
-  console.log("Background location updates started.");
 }
 
 /**
  * Stops background location updates if running.
  */
 export async function stopLocationUpdatesAsync() {
-  const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-    TASK_NAME.locationTask
-  );
-
-  if (!hasStarted) {
-    console.log("Background updates not running.");
-    return;
-  }
-
   await Location.stopLocationUpdatesAsync(TASK_NAME.locationTask);
   console.log("Background location updates stopped.");
 }
@@ -92,6 +97,25 @@ export async function getLastKnownPositionAsync() {
     };
   } catch (error) {
     console.error("Failed to get last known position:", error);
+    return null;
+  }
+}
+
+export async function getCurrentPositionAsync() {
+  try {
+    const position = await Location.getCurrentPositionAsync();
+
+    if (!position) {
+      console.warn("No Current position available.");
+      return null;
+    }
+
+    return {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    };
+  } catch (error) {
+    console.error("Failed to get Current position:", error);
     return null;
   }
 }

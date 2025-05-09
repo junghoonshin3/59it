@@ -13,7 +13,7 @@ export function useSyncCameraWithLocation(mapRef: RefObject<MapView>) {
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
-      mapRef.current.animateToRegion(region, 1000);
+      mapRef.current.animateToRegion(region);
     }
   }, [location]);
 }

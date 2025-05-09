@@ -2,13 +2,9 @@ import { View, Text } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  hasLocationPermissions,
-  startLocationUpdatesAsync,
-} from "@/services/locationService";
+import { hasLocationPermissions } from "@/services/locationService";
 import * as SplashScreen from "expo-splash-screen";
 import { useAuthStore } from "@/store/useAuthStore";
-import { StatusBar } from "expo-status-bar";
 
 export default function index() {
   const router = useRouter();
@@ -31,7 +27,6 @@ export default function index() {
         } else if (!session) {
           router.replace("/auth/signin");
         } else {
-          await startLocationUpdatesAsync();
           router.replace("/maps");
         }
       } catch (e) {

@@ -10,8 +10,6 @@ import { useRouter } from "expo-router";
 import CommonModal, { CommonModalProps } from "@/components/commonpopup";
 import { storage } from "@/utils/storage";
 import { useAuthStore } from "@/store/useAuthStore";
-import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Permission() {
   const router = useRouter();
@@ -40,8 +38,6 @@ export default function Permission() {
         router.replace("/auth/signin"); // 로그인을 위해 signin 화면으로 이동
         return;
       }
-
-      await startLocationUpdatesAsync();
       router.replace("/maps"); // 이미 로그인을 한 경우 맵화면으로 이동
       return;
     }

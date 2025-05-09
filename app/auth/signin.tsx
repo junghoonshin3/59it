@@ -22,7 +22,7 @@ export default function SignIn() {
         console.error("login error", error);
         return;
       }
-      await startLocationUpdatesAsync();
+
       router.replace("/maps"); // 로그인 성공하면 메인으로
     } catch (err) {
       console.error("login err", err);
