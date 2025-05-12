@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, StatusBar } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
@@ -10,8 +10,10 @@ import { StyleProps } from "react-native-reanimated";
 import { ImageButton } from "@/components/ImageButton";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
 import { UserAvatar } from "@/components/useravatar";
-import { FlatList } from "react-native-gesture-handler";
+import { FlatList, TextInput } from "react-native-gesture-handler";
 import ConfirmButton from "@/components/confirmbutton";
+import { router } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
@@ -142,7 +144,7 @@ export default function Map() {
               image={require("@/assets/images/my_location.png")}
               onPress={getCurrentLocation}
               className="shadow-lg"
-              backgroundColor="bg-[#FDD835]"
+              backgroundColor="bg-[#0075FF]"
               size={50}
             />
           </CustomBackground>
@@ -167,7 +169,7 @@ export default function Map() {
       >
         <BottomSheetView className="ps-[32px] pe-[32px]">
           <Text className="text-white text-[20px] font-semibold leading-[34px] tracking-[-0.5px]">
-            친구
+            모임
           </Text>
           <FlatList
             showsHorizontalScrollIndicator={false}
@@ -178,10 +180,9 @@ export default function Map() {
             ItemSeparatorComponent={() => <View className="w-[12px]"></View>}
           />
           <ConfirmButton
-            title="친구 추가"
+            title="모임 생성"
             onPress={() => {
-              console.log("친구 추가 화면으로 이동");
-              // 그룹 생성 로직 호출
+              router.navigate("/friends");
             }}
           />
         </BottomSheetView>

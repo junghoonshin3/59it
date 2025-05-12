@@ -2,9 +2,7 @@ import { SplashScreen, Stack } from "expo-router";
 import "../global.css";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import * as TaskManager from "expo-task-manager";
-import { LocationObject } from "expo-location";
-import { TASK_NAME } from "@/constants/taskName";
+import "react-native-get-random-values";
 
 SplashScreen.preventAutoHideAsync();
 
