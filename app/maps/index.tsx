@@ -165,7 +165,7 @@ export default function Map() {
         />
         <ConfirmButton
           title="모임 생성"
-          onPress={() => router.navigate("/friends")}
+          onPress={() => router.push("/meeting")}
         />
       </CustomBottomSheet>
     </View>

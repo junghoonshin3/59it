@@ -61,7 +61,7 @@ LocaleConfig.locales["ko"] = {
 LocaleConfig.defaultLocale = "ko";
 dayjs.locale("ko");
 
-export default function Friends() {
+export default function Metting() {
   const router = useRouter();
   const [groupNm, setGroupNm] = useState("");
   const {
@@ -125,6 +125,11 @@ export default function Friends() {
       prev.set("hour", time.hour()).set("minute", time.minute())
     );
   };
+
+  const isValid =
+    groupNm.trim() !== "" &&
+    selectedPlace !== null &&
+    selectedDateTime.isValid();
 
   const DayComponent = ({ date, state }: any) => {
     const isSelected =
@@ -229,9 +234,12 @@ export default function Friends() {
 
         <View className="flex-1" />
         <ConfirmButton
-          className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px]"
+          className={`bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px] ${
+            !isValid ? "opacity-50" : ""
+          }`}
           title="가입하기"
-          onPress={() => router.replace("/maps")}
+          onPress={() => router.dismiss(1)}
+          disabled={!isValid}
         />
 
         {/* 장소 바텀시트 */}
@@ -285,18 +293,6 @@ export default function Friends() {
             pastScrollRange={0}
             futureScrollRange={12}
             current={dayjs().format("YYYY-MM-DD")}
-            // onDayPress={(day) => {
-            //   handleSelectDate(day.dateString);
-            //   console.log("onDayPress");
-            //   calendarBottomSheetRef.current?.close();
-            // }}
-            markedDates={{
-              [selectedDateTime.format("YYYY-MM-DD")]: {
-                selected: true,
-                disableTouchEvent: true,
-                selectedColor: "#0075FF",
-              },
-            }}
             theme={{
               textDayStyle: {
                 flex: 1,
