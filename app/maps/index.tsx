@@ -1,19 +1,19 @@
-import { View, Text, TouchableOpacity, StatusBar } from "react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { View, Text } from "react-native";
+import React, { useCallback, useRef } from "react";
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
 import { Loading } from "@/components/loading";
 import { useSyncCameraWithLocation } from "@/hooks/useSyncCameraWithLocation";
 import { CustomMarkerView } from "@/components/custommarker";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { StyleProps } from "react-native-reanimated";
 import { ImageButton } from "@/components/ImageButton";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
 import { UserAvatar } from "@/components/useravatar";
-import { FlatList, TextInput } from "react-native-gesture-handler";
+import { FlatList } from "react-native-gesture-handler";
 import ConfirmButton from "@/components/confirmbutton";
 import { router } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CustomBottomSheet from "@/components/CustomBottomSheet";
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
@@ -137,7 +137,12 @@ export default function Map() {
           </Callout>
         </Marker>
       </MapView>
-      <BottomSheet
+      <CustomBottomSheet
+        ref={bottomSheetRef}
+        enableDynamicSizing
+        onChange={handleSheetChanges}
+        enablePanDownToClose={false}
+        contentContainerClassName="px-[32px]"
         backgroundComponent={(props) => (
           <CustomBackground {...props}>
             <ImageButton
@@ -149,44 +154,20 @@ export default function Map() {
             />
           </CustomBackground>
         )}
-        backgroundStyle={{
-          flex: 1,
-          backgroundColor: "#181A20",
-          borderTopEndRadius: 32,
-          borderTopStartRadius: 32,
-        }}
-        handleIndicatorStyle={{
-          marginTop: 10,
-          width: 50,
-          height: 5,
-          backgroundColor: "#626877",
-        }}
-        ref={bottomSheetRef}
-        enableDynamicSizing={true}
-        onChange={handleSheetChanges}
-        enablePanDownToClose={false}
-        enableHandlePanningGesture={true}
       >
-        <BottomSheetView className="ps-[32px] pe-[32px]">
-          <Text className="text-white text-[20px] font-semibold leading-[34px] tracking-[-0.5px]">
-            모임
-          </Text>
-          <FlatList
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="pt-[20px] pb-[20px]"
-            data={participants}
-            renderItem={renderItem}
-            horizontal
-            ItemSeparatorComponent={() => <View className="w-[12px]"></View>}
-          />
-          <ConfirmButton
-            title="모임 생성"
-            onPress={() => {
-              router.navigate("/friends");
-            }}
-          />
-        </BottomSheetView>
-      </BottomSheet>
+        <Text className="text-white text-[20px] font-semibold">모임</Text>
+        <FlatList
+          data={participants}
+          renderItem={renderItem}
+          horizontal
+          contentContainerClassName="pt-[20px] pb-[20px]"
+          ItemSeparatorComponent={() => <View className="w-[12px]" />}
+        />
+        <ConfirmButton
+          title="모임 생성"
+          onPress={() => router.navigate("/friends")}
+        />
+      </CustomBottomSheet>
     </View>
   );
 }

@@ -1,4 +1,11 @@
-import { View, Text, TextInput, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Image,
+  TouchableOpacity,
+  KeyboardTypeOptions,
+} from "react-native";
 import React, { useState } from "react";
 import { Pressable } from "react-native-gesture-handler";
 
@@ -10,6 +17,7 @@ type FormFieldProps = {
   error: string;
   readOnly?: boolean;
   value: string;
+  keyboardTypeOption?: KeyboardTypeOptions;
   onChangeText?: (text: string) => void;
   onPress?: () => void;
 };
@@ -22,6 +30,7 @@ export default function FormField({
   error,
   readOnly,
   value,
+  keyboardTypeOption,
   onChangeText,
   onPress,
 }: FormFieldProps) {
@@ -51,6 +60,7 @@ export default function FormField({
           />
 
           <TextInput
+            keyboardType={keyboardTypeOption}
             readOnly={readOnly}
             className="ms-[10px] me-[10px] text-white flex-1"
             placeholder={placeholder}
