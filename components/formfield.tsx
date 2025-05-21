@@ -3,7 +3,6 @@ import {
   Text,
   TextInput,
   Image,
-  TouchableOpacity,
   KeyboardTypeOptions,
 } from "react-native";
 import React, { useState } from "react";
@@ -73,6 +72,7 @@ export default function FormField({
           />
         </View>
       </Pressable>
+      <Text className="text-red-500 text-[12px]">{value ? "" : error}</Text>
     </View>
   );
 }

@@ -1,5 +1,5 @@
-import { View, Text } from "react-native";
-import React, { useCallback, useRef } from "react";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
 import { Loading } from "@/components/loading";
@@ -9,58 +9,35 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { StyleProps } from "react-native-reanimated";
 import { ImageButton } from "@/components/ImageButton";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
-import { UserAvatar } from "@/components/useravatar";
 import { FlatList } from "react-native-gesture-handler";
-import ConfirmButton from "@/components/confirmbutton";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
+import { GroupResponse } from "@/types/types";
+import { useAuthStore } from "@/store/useAuthStore";
+import { getMyGroups } from "@/services/supabase/supabaseService";
+import { GroupItem } from "@/components/GroupItem";
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
   const { getCurrentLocation, location } = useLocationStore();
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const participants = [
-    {
-      imageUrl:
-        "http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg",
-      username: "정훈",
-      isOnline: true,
-    },
-    {
-      imageUrl:
-        "http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg",
-      username: "정훈",
-      isOnline: true,
-    },
-    {
-      imageUrl:
-        "http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg",
-      username: "정훈",
-      isOnline: true,
-    },
-    {
-      imageUrl:
-        "http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg",
-      username: "광호",
-      isOnline: true,
-    },
-    {
-      imageUrl:
-        "http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg",
-      username: "몽교",
-      isOnline: true,
-    },
-    {
-      imageUrl:
-        "http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg",
-      username: "골령",
-      isOnline: true,
-    },
-  ];
-
+  const [groups, setGroups] = useState<GroupResponse[] | null>([]);
+  const { session } = useAuthStore();
   useSyncCameraWithLocation(mapRef);
 
   useWatchLocation();
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchGroups = async () => {
+        if (!session) return;
+        const myGroups = await getMyGroups(session.user.id);
+        setGroups(myGroups);
+      };
+
+      fetchGroups();
+    }, [])
+  );
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -83,17 +60,15 @@ export default function Map() {
   };
 
   const renderItem = useCallback(
-    ({ item }: any) => (
-      <UserAvatar
-        imageUrl={item.imageUrl}
-        username={item.username}
-        isOnline={item.isOnline}
-        onPress={() => console.log("정훈 클릭됨")}
+    ({ item }: { item: GroupResponse }) => (
+      <GroupItem
+        groupName={item.name}
+        group_image_url={item.group_image_url}
+        onPress={() => {}}
       />
     ),
     []
   );
-
   if (!location) {
     // 아직 위치 불러오는 중
     return <Loading />;
@@ -155,17 +130,32 @@ export default function Map() {
           </CustomBackground>
         )}
       >
-        <Text className="text-white text-[20px] font-semibold">모임</Text>
+        <View className="flex-row items-center justify-between">
+          <Text className="text-white text-[20px] font-semibold">
+            나의 모임들
+          </Text>
+          <TouchableOpacity onPress={() => router.push("/meeting")}>
+            <Image
+              source={require("@/assets/images/add_group.png")}
+              className="w-5 h-5"
+            />
+          </TouchableOpacity>
+        </View>
         <FlatList
-          data={participants}
+          data={groups}
+          ListEmptyComponent={() => {
+            return (
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-white text-[16px] font-semibold">
+                  참여한 모임이 없습니다.
+                </Text>
+              </View>
+            );
+          }}
           renderItem={renderItem}
           horizontal
           contentContainerClassName="pt-[20px] pb-[20px]"
           ItemSeparatorComponent={() => <View className="w-[12px]" />}
-        />
-        <ConfirmButton
-          title="모임 생성"
-          onPress={() => router.push("/meeting")}
         />
       </CustomBottomSheet>
     </View>

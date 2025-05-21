@@ -1,9 +1,9 @@
-import { View, Keyboard, Text, TouchableOpacity } from "react-native";
+import { View, Keyboard } from "react-native";
 import React, { useMemo, useRef, useState } from "react";
 import Topbar from "@/components/topbar";
 import { useRouter } from "expo-router";
 import FormField from "@/components/formfield";
-import { usePlaceStore } from "@/store/usePlaceStore";
+import { Place, usePlaceStore } from "@/store/usePlaceStore";
 import BottomSheet from "@gorhom/bottom-sheet";
 import {
   FlatList,
@@ -16,72 +16,33 @@ import ConfirmButton from "@/components/confirmbutton";
 import { CalendarList, LocaleConfig } from "react-native-calendars";
 import DatePicker from "react-native-date-picker";
 import dayjs from "dayjs";
+import "dayjs/locale/ko";
+import Day from "@/components/Day";
+import { useAuthStore } from "@/store/useAuthStore";
+import { createGroup } from "@/services/supabase/supabaseService";
+import { GroupRequest } from "@/types/types";
 
-LocaleConfig.locales["ko"] = {
-  monthNames: [
-    "1월",
-    "2월",
-    "3월",
-    "4월",
-    "5월",
-    "6월",
-    "7월",
-    "8월",
-    "9월",
-    "10월",
-    "11월",
-    "12월",
-  ],
-  monthNamesShort: [
-    "1월",
-    "2월",
-    "3월",
-    "4월",
-    "5월",
-    "6월",
-    "7월",
-    "8월",
-    "9월",
-    "10월",
-    "11월",
-    "12월",
-  ],
-  dayNames: [
-    "일요일",
-    "월요일",
-    "화요일",
-    "수요일",
-    "목요일",
-    "금요일",
-    "토요일",
-  ],
-  dayNamesShort: ["일", "월", "화", "수", "목", "금", "토"],
-  today: "오늘",
-};
-LocaleConfig.defaultLocale = "ko";
-dayjs.locale("ko");
-
-export default function Metting() {
+export default function Meeting() {
   const router = useRouter();
-  const [groupNm, setGroupNm] = useState("");
   const {
     searchPlaces,
-    setQuery,
-    query,
     places,
     loading,
-    selectedPlace,
-    setSelectedPlace,
+    searchQuery,
+    setSearchQuery,
+    // selectedPlace,
+    // setSelectedPlace,
   } = usePlaceStore();
-
+  const { user } = useAuthStore();
+  const [groupNm, setGroupNm] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const placeBottomSheetRef = useRef<BottomSheet>(null);
   const calendarBottomSheetRef = useRef<BottomSheet>(null);
   const timeBottomSheetRef = useRef<BottomSheet>(null);
-
   const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
 
   const selectedDateTimeDate = useMemo(
-    () => selectedDateTime.toDate(),
+    () => selectedDateTime,
     [selectedDateTime]
   );
 
@@ -125,57 +86,31 @@ export default function Metting() {
       prev.set("hour", time.hour()).set("minute", time.minute())
     );
   };
+  const handleCreateGroup = async () => {
+    let req: GroupRequest = {
+      host_id: user?.id ?? "",
+      name: groupNm,
+      address: selectedPlace?.formattedAddress ?? "",
+      display_name: selectedPlace?.displayName?.text ?? "",
+      latitude: selectedPlace?.location.latitude ?? 0,
+      longitude: selectedPlace?.location.longitude ?? 0,
+      meeting_date: selectedDateTime.format("YYYY-MM-DD"),
+      meeting_time: selectedDateTime.format("HH:mm:00"),
+    };
+
+    const data = await createGroup(req);
+
+    if (data) {
+      router.push(
+        `/invite/InviteCode?invite_code=${data.invite_code}&group_id=${data.id}`
+      );
+    }
+  };
 
   const isValid =
     groupNm.trim() !== "" &&
     selectedPlace !== null &&
     selectedDateTime.isValid();
-
-  const DayComponent = ({ date, state }: any) => {
-    const isSelected =
-      selectedDateTime.format("YYYY-MM-DD") === date.dateString;
-    const dayOfWeek = new Date(date.dateString).getDay();
-    const isSunday = dayOfWeek === 0;
-    const isSaturday = dayOfWeek === 6;
-    const isToday = date.dateString === dayjs().format("YYYY-MM-DD");
-
-    const textColor = isSelected
-      ? "#FFFFFF"
-      : isSunday
-      ? "#FF4D4D"
-      : isSaturday
-      ? "#4D79FF"
-      : isToday
-      ? "#0075FF"
-      : "#FFFFFF";
-
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          handleSelectDate(date.dateString);
-          calendarBottomSheetRef.current?.close();
-        }}
-        disabled={state === "disabled"}
-        style={{
-          flex: 1,
-          backgroundColor: isSelected ? "#0075FF" : "transparent",
-          borderRadius: 20,
-          padding: 10,
-          aspectRatio: 1,
-        }}
-      >
-        <Text
-          style={{
-            color: textColor,
-            fontFamily: "NotoSansKR-Medium",
-            textAlign: "center",
-          }}
-        >
-          {date.day}
-        </Text>
-      </TouchableOpacity>
-    );
-  };
 
   return (
     <TouchableWithoutFeedback
@@ -194,7 +129,7 @@ export default function Metting() {
           placeholder="모임명을 입력하세요."
           icon={require("../../assets/images/groups_create.png")}
           readOnly={false}
-          error=""
+          error="모임명을 입력해주세요."
           value={groupNm}
           onChangeText={setGroupNm}
         />
@@ -205,7 +140,7 @@ export default function Metting() {
           placeholder="모임장소를 검색하세요."
           icon={require("../../assets/images/search_places.png")}
           readOnly={true}
-          error=""
+          error="모임장소를 선택해주세요."
           value={`${selectedPlace?.displayName?.text ?? ""}`}
           onPress={handleSearch}
         />
@@ -216,7 +151,7 @@ export default function Metting() {
           placeholder="모임날짜를 선택하세요."
           icon={require("../../assets/images/month_calendar.png")}
           readOnly={true}
-          error=""
+          error="모임날짜를 선택해주세요."
           value={selectedDateTime.format("YYYY-MM-DD")}
           onPress={handleCalendar}
         />
@@ -227,8 +162,8 @@ export default function Metting() {
           placeholder="모임시간을 선택하세요."
           icon={require("../../assets/images/access_time.png")}
           readOnly={true}
-          error=""
-          value={selectedDateTime.format("A HH:mm")}
+          error="모임시간을 선택해주세요."
+          value={selectedDateTime.format("A hh:mm")}
           onPress={handleTime}
         />
 
@@ -237,8 +172,8 @@ export default function Metting() {
           className={`bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px] ${
             !isValid ? "opacity-50" : ""
           }`}
-          title="가입하기"
-          onPress={() => router.dismiss(1)}
+          title="생성하기"
+          onPress={handleCreateGroup}
           disabled={!isValid}
         />
 
@@ -253,9 +188,9 @@ export default function Metting() {
           <SearchBar
             className="w-full h-[80px]"
             placeholder="모임장소를 검색해주세요."
-            value={query}
+            value={searchQuery}
             icon={require("../../assets/images/search_places.png")}
-            onChangeText={setQuery}
+            onChangeText={setSearchQuery}
             onSearch={onSearch}
           />
           <FlatList
@@ -288,7 +223,15 @@ export default function Metting() {
           contentContainerClassName="flex-1"
         >
           <CalendarList
-            dayComponent={DayComponent}
+            dayComponent={({ date, state }) => (
+              <Day
+                date={date}
+                state={state}
+                selectedDate={selectedDateTime.format("YYYY-MM-DD")}
+                onSelectDate={handleSelectDate}
+                onClose={() => calendarBottomSheetRef.current?.close()}
+              />
+            )}
             monthFormat="yyyy년 MM월"
             pastScrollRange={0}
             futureScrollRange={12}
@@ -318,12 +261,9 @@ export default function Metting() {
             style={{ flex: 1 }}
             dividerColor="#FFFFFF"
             theme="dark"
-            date={selectedDateTimeDate}
+            date={selectedDateTimeDate.toDate()}
             mode="time"
-            onDateChange={(date) => {
-              console.log("onDateChange", date);
-              handleSelectTime(date);
-            }}
+            onDateChange={handleSelectTime}
           />
         </CustomBottomSheet>
       </View>

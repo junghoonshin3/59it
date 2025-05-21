@@ -1,12 +1,14 @@
 import { View, Image } from "react-native";
 import React, { useState } from "react";
 import { login } from "@react-native-seoul/kakao-login";
-import { supabase } from "@/services/supabaseService";
+import {
+  Profile,
+  registerProfile,
+  supabase,
+} from "@/services/supabase/supabaseService";
 import { useRouter } from "expo-router";
 import LoginButton from "../../components/loginbutton";
 import Topbar from "@/components/topbar";
-import { startLocationUpdatesAsync } from "@/services/locationService";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SignIn() {
   const router = useRouter();
@@ -18,6 +20,14 @@ export default function SignIn() {
         access_token: token.accessToken,
         token: token.idToken,
       });
+      if (data?.user) {
+        const { error } = await registerProfile(data.user);
+        if (error) {
+          console.error("registerProfile error", error);
+          return;
+        }
+      }
+
       if (error) {
         console.error("login error", error);
         return;

@@ -12,9 +12,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.x59it",
       "infoPlist": {
-        "UIBackgroundModes": [
-          "location"
-        ],
+        "UIBackgroundModes": ["location"],
         "NSLocationAlwaysAndWhenInUseUsageDescription": "이 앱은 백그라운드에서도 위치를 사용합니다.",
         "NSLocationWhenInUseUsageDescription": "이 앱은 사용자의 위치를 추적합니다."
       }
@@ -58,6 +56,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#181A20"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
       [

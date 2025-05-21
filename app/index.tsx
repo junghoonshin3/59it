@@ -16,7 +16,7 @@ export default function index() {
       try {
         const hasOnboarded = await AsyncStorage.getItem("onboardingSeen");
         await useAuthStore.getState().initAuth();
-        const { session } = useAuthStore.getState();
+        const { session, user } = useAuthStore.getState();
         const { isForgroundPermission, isBackgroundPermission } =
           await hasLocationPermissions();
 
@@ -24,7 +24,7 @@ export default function index() {
           router.replace("/permission");
         } else if (!hasOnboarded) {
           router.replace("/onboarding");
-        } else if (!session) {
+        } else if (!session || !user) {
           router.replace("/auth/signin");
         } else {
           router.replace("/maps");

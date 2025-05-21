@@ -19,29 +19,29 @@ type Location = {
 interface PlaceStore {
   loading: boolean;
   lastQueried: string;
-  query: string;
+  searchQuery: string;
   places: Place[];
-  selectedPlace?: Place | null;
+  // selectedPlace?: Place | null;
   nextPageToken: string | null;
-  setQuery: (query: string) => void;
-  setSelectedPlace: (place: Place | null) => void;
+  setSearchQuery: (query: string) => void;
+  // setSelectedPlace: (place: Place | null) => void;
   searchPlaces: (isLoadMore?: boolean) => Promise<void>;
 }
 
 export const usePlaceStore = create<PlaceStore>((set, get) => ({
   loading: false,
-  query: "",
+  searchQuery: "",
   selectedPlace: null,
   lastQueried: "", // 초기값
   places: [],
   nextPageToken: null,
-  setQuery: (query) => set({ query }),
-  setSelectedPlace: (place) => set({ selectedPlace: place }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
+  // setSelectedPlace: (place) => set({ selectedPlace: place }),
   searchPlaces: async (isLoadMore = false) => {
-    const { query, nextPageToken, lastQueried } = get();
+    const { searchQuery, nextPageToken, lastQueried } = get();
 
     // 🔒 중복 쿼리면 실행 방지
-    if (!query || (!isLoadMore && query === lastQueried)) return;
+    if (!searchQuery || (!isLoadMore && searchQuery === lastQueried)) return;
 
     // 다음 페이지 요청인데 토큰이 없으면 리턴
     if (isLoadMore && !nextPageToken) return;
@@ -51,7 +51,7 @@ export const usePlaceStore = create<PlaceStore>((set, get) => ({
     try {
       const res = await fetchPlaceSuggestions(
         {
-          textQuery: query,
+          textQuery: searchQuery,
           languageCode: "ko",
           regionCode: "kr",
           ...(isLoadMore && nextPageToken ? { pageToken: nextPageToken } : {}),
@@ -69,7 +69,7 @@ export const usePlaceStore = create<PlaceStore>((set, get) => ({
       set((prev) => ({
         places: isLoadMore ? [...prev.places, ...newPlaces] : newPlaces,
         nextPageToken: nextToken,
-        lastQueried: isLoadMore ? prev.lastQueried : query,
+        lastQueried: isLoadMore ? prev.lastQueried : searchQuery,
         loading: false,
       }));
     } catch (err) {

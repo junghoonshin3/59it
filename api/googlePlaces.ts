@@ -35,6 +35,5 @@ export async function fetchPlaceSuggestions(data: Data, headers: Headers) {
       },
     }
   );
-  console.log("res >>>>>>>>>>>>>>>>>>>>>>> ", JSON.stringify(res.data));
   return res;
 }
