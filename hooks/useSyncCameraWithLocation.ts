@@ -8,8 +8,8 @@ export function useSyncCameraWithLocation(mapRef: RefObject<MapView>) {
   useEffect(() => {
     if (mapRef.current && location) {
       const region: Region = {
-        latitude: location.latitude,
-        longitude: location.longitude,
+        latitude: location.latitude!,
+        longitude: location.longitude!,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };

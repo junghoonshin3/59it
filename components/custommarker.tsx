@@ -1,31 +1,48 @@
-import React from "react";
+import React, { FunctionComponent, memo } from "react";
 import { View, Text, Image } from "react-native";
+import { Callout, Marker } from "react-native-maps";
 
 type MarkerViewProps = {
-  imageUrl: string;
+  imageUrl?: string;
   name?: string;
   isOnline?: boolean;
+  coordinate: any;
 };
 
-export function CustomMarkerView({
-  imageUrl,
-  name,
-  isOnline,
-}: MarkerViewProps) {
-  return (
-    <View>
-      {/* 프로필 이미지 */}
-      <View className="w-[38px] h-[38px] rounded-full border-[2px] border-sky-500 shadow-md bg-white">
+export const CustomMarkerView: FunctionComponent<MarkerViewProps> = memo(
+  ({ imageUrl, name, isOnline, coordinate }) => {
+    let content = (
+      <View className="w-[38px] h-[38px] rounded-full items-center justify-center border-[2px] border-[#0075FF] bg-background">
         <Image
-          source={{ uri: imageUrl }}
-          className="flex-1 rounded-full"
-          resizeMode="cover"
+          source={
+            imageUrl
+              ? { uri: imageUrl }
+              : require("../assets/images/default_group_image.png")
+          }
+          resizeMode="contain"
+          className={`w-[30px] h-[30px] rounded-full`}
         />
         {/* 온라인 상태 점 */}
         {isOnline && (
           <View className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-500" />
         )}
       </View>
-    </View>
-  );
-}
+    );
+    let callOut = (
+      <Callout className="flex-1">
+        <Text className="bg-white ">{name}</Text>
+      </Callout>
+    );
+    return (
+      <Marker
+        className="justify-center items-center"
+        tracksInfoWindowChanges={false}
+        coordinate={coordinate}
+        tracksViewChanges={false}
+      >
+        {content}
+        {callOut}
+      </Marker>
+    );
+  }
+);

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import MapView, { Callout, Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import React, { useCallback, useRef, useState } from "react";
+import MapView, { PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
 import { Loading } from "@/components/loading";
 import { useSyncCameraWithLocation } from "@/hooks/useSyncCameraWithLocation";
@@ -16,13 +16,15 @@ import { GroupResponse } from "@/types/types";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getMyGroups } from "@/services/supabase/supabaseService";
 import { GroupItem } from "@/components/GroupItem";
+import { getCurrentPositionAsync } from "@/services/locationService";
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
-  const { getCurrentLocation, location } = useLocationStore();
+  const { location } = useLocationStore();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [groups, setGroups] = useState<GroupResponse[] | null>([]);
-  const { session } = useAuthStore();
+  const { user } = useAuthStore();
+
   useSyncCameraWithLocation(mapRef);
 
   useWatchLocation();
@@ -30,16 +32,27 @@ export default function Map() {
   useFocusEffect(
     useCallback(() => {
       const fetchGroups = async () => {
-        if (!session) return;
-        const myGroups = await getMyGroups(session.user.id);
+        if (!user) return;
+        const myGroups = await getMyGroups(user.id);
         setGroups(myGroups);
       };
-
       fetchGroups();
     }, [])
   );
 
-  // callbacks
+  const getCurrentLocation = async () => {
+    const currentPosition = await getCurrentPositionAsync();
+    if (currentPosition && mapRef.current) {
+      const region: Region = {
+        latitude: currentPosition.latitude,
+        longitude: currentPosition.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      };
+      mapRef.current.animateToRegion(region);
+    }
+  };
+
   const handleSheetChanges = useCallback((index: number) => {
     console.log("handleSheetChanges", index);
   }, []);
@@ -64,11 +77,19 @@ export default function Map() {
       <GroupItem
         groupName={item.name}
         group_image_url={item.group_image_url}
-        onPress={() => {}}
+        onPress={() => {
+          mapRef.current?.animateCamera({
+            center: {
+              latitude: item.latitude,
+              longitude: item.longitude,
+            },
+          });
+        }}
       />
     ),
     []
   );
+
   if (!location) {
     // 아직 위치 불러오는 중
     return <Loading />;
@@ -80,37 +101,45 @@ export default function Map() {
         style={{ flex: 1 }}
         showsBuildings={false}
         ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        region={{
+        initialRegion={{
           latitude: location.latitude,
           longitude: location.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
+        provider={PROVIDER_GOOGLE}
         scrollDuringRotateOrZoomEnabled={false}
         rotateEnabled={false}
         zoomTapEnabled={false}
         toolbarEnabled={false}
-        maxZoomLevel={20}
+        maxZoomLevel={25}
         minZoomLevel={13}
         googleRenderer="LEGACY"
       >
-        <Marker
-          className="justify-center items-center"
-          coordinate={{
-            latitude: location!!.latitude,
-            longitude: location!!.longitude,
-          }}
-        >
+        {groups?.map((item, index) => (
+          // 약속장소 마커
           <CustomMarkerView
-            imageUrl="http://k.kakaocdn.net/dn/baYdsc/btrRh69C8Xs/QjPOiPaXfafLiFz6Ta1he1/img_110x110.jpg"
-            name="정훈"
-            isOnline={true}
+            key={index}
+            coordinate={{
+              latitude: item.latitude,
+              longitude: item.longitude,
+            }}
+            imageUrl={item.group_image_url}
+            name={item.display_name}
           />
-          <Callout className="flex-1">
-            <Text className="bg-white ">정훈</Text>
-          </Callout>
-        </Marker>
+        ))}
+
+        {
+          // 본인 마커
+          <CustomMarkerView
+            coordinate={{
+              latitude: location.latitude,
+              longitude: location.longitude,
+            }}
+            imageUrl={user?.user_metadata.picture}
+            name={user?.user_metadata.name}
+          />
+        }
       </MapView>
       <CustomBottomSheet
         ref={bottomSheetRef}

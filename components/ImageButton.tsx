@@ -2,8 +2,6 @@ import React from "react";
 import {
   TouchableOpacity,
   Image,
-  Text,
-  View,
   GestureResponderEvent,
   ImageSourcePropType,
 } from "react-native";

@@ -103,15 +103,15 @@ export const updateGroup = async (
 
 export const getMyGroups = async (
   user_id: string
-): Promise<GroupResponse[] | null> => {
+): Promise<GroupResponse[] | []> => {
   const { data, error } = await supabase
-    .from("groups")
-    .select("*")
-    .eq("host_id", user_id)
-    .order("created_at", { ascending: false });
+    .from("group_members")
+    .select("group:groups(*)") // groups 테이블 전체를 조인해서 가져옴
+    .eq("user_id", user_id);
+
   if (error) {
-    console.error("그룹 조회 오류:", error.message);
-    return null;
+    console.error("내가 참여한 그룹 가져오기 실패:", error);
   }
-  return data as GroupResponse[];
+  const groups: any[] | [] = data?.map((item) => item.group) ?? [];
+  return groups as GroupResponse[];
 };

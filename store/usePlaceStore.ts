@@ -21,10 +21,10 @@ interface PlaceStore {
   lastQueried: string;
   searchQuery: string;
   places: Place[];
-  // selectedPlace?: Place | null;
+
   nextPageToken: string | null;
   setSearchQuery: (query: string) => void;
-  // setSelectedPlace: (place: Place | null) => void;
+
   searchPlaces: (isLoadMore?: boolean) => Promise<void>;
 }
 
@@ -36,7 +36,7 @@ export const usePlaceStore = create<PlaceStore>((set, get) => ({
   places: [],
   nextPageToken: null,
   setSearchQuery: (query) => set({ searchQuery: query }),
-  // setSelectedPlace: (place) => set({ selectedPlace: place }),
+
   searchPlaces: async (isLoadMore = false) => {
     const { searchQuery, nextPageToken, lastQueried } = get();
 

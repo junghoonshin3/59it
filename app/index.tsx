@@ -9,7 +9,6 @@ import { useAuthStore } from "@/store/useAuthStore";
 export default function index() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     const init = async () => {
       // 앱 초기화 로직 (예: 온보딩 확인)

@@ -16,7 +16,7 @@ export const useWatchLocation = () => {
         {
           accuracy: Location.Accuracy.High,
           timeInterval: 5000, // 5초마다
-          distanceInterval: 10, // 10m 이동 시
+          distanceInterval: 300, // 10m 이동 시
         },
         (location) => {
           if (isMounted) {
