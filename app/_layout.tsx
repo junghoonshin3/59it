@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-get-random-values";
 import { LocaleConfig } from "react-native-calendars";
 import dayjs from "dayjs";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -52,6 +53,10 @@ LocaleConfig.locales["ko"] = {
 LocaleConfig.defaultLocale = "ko";
 dayjs.locale("ko");
 
+GoogleSignin.configure({
+  scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+});
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
   return (

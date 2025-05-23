@@ -14,10 +14,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,
   user: null,
-
   setSession: (session) => set({ session }),
   setUser: (user) => set({ user }),
-
   initAuth: async () => {
     const { data: sessionData } = await supabase.auth.getSession();
     const { data: userData } = await supabase.auth.getUser();

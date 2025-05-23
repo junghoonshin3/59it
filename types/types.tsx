@@ -24,3 +24,20 @@ export type GroupResponse = {
   expires_at: string;
   group_image_url?: string;
 };
+
+export type UserProfile = {
+  id: string;
+  nickname: string;
+  profile_image?: string;
+  is_blocked: boolean;
+  role: string;
+  create_at: string;
+};
+
+export type MemberLocation = {
+  user_id: string;
+  group_id: string;
+  latitude: number;
+  longitude: number;
+  updated_at: string;
+};

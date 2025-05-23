@@ -12,7 +12,6 @@ export const GroupItem = ({
   group_image_url,
   onPress,
 }: GroupItemProps) => {
-  console.log("group_image_url", group_image_url);
   return (
     <TouchableOpacity
       onPress={onPress}

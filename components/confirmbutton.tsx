@@ -14,7 +14,6 @@ export default function ConfirmButton({
   title,
   disabled,
 }: ConfirmButtonProps) {
-  //bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center
   return (
     <TouchableOpacity
       disabled={disabled}

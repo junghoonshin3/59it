@@ -11,6 +11,7 @@ type MarkerViewProps = {
 
 export const CustomMarkerView: FunctionComponent<MarkerViewProps> = memo(
   ({ imageUrl, name, isOnline, coordinate }) => {
+    // console.log("imageUrl : ", imageUrl);
     let content = (
       <View className="w-[38px] h-[38px] rounded-full items-center justify-center border-[2px] border-[#0075FF] bg-background">
         <Image

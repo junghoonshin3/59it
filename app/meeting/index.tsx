@@ -13,7 +13,7 @@ import PlaceItem from "@/components/PlaceItem";
 import SearchBar from "@/components/searchBar";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import ConfirmButton from "@/components/confirmbutton";
-import { CalendarList, LocaleConfig } from "react-native-calendars";
+import { CalendarList } from "react-native-calendars";
 import DatePicker from "react-native-date-picker";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";

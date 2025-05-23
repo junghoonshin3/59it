@@ -1,6 +1,5 @@
 import { getLastKnownPositionAsync } from "@/services/locationService";
 import { create } from "zustand";
-import { shallow } from "zustand/shallow";
 import { devtools } from "zustand/middleware";
 type Location = {
   latitude: number;

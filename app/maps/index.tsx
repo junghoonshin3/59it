@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import MapView, { PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
 import { Loading } from "@/components/loading";
@@ -12,22 +12,27 @@ import { useWatchLocation } from "@/hooks/useWatchLocation";
 import { FlatList } from "react-native-gesture-handler";
 import { router, useFocusEffect } from "expo-router";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
-import { GroupResponse } from "@/types/types";
+import { GroupResponse, UserProfile } from "@/types/types";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getMyGroups } from "@/services/supabase/supabaseService";
+import {
+  getGroupMembers,
+  getMyGroups,
+  updateMyLocation,
+} from "@/services/supabase/supabaseService";
 import { GroupItem } from "@/components/GroupItem";
 import { getCurrentPositionAsync } from "@/services/locationService";
+import ConfirmButton from "@/components/confirmbutton";
+import { UserAvatar } from "@/components/useravatar";
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
-  const { location } = useLocationStore();
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const { location, setLocation } = useLocationStore();
+  const groupRef = useRef<BottomSheet>(null);
+  const createRef = useRef<BottomSheet>(null);
   const [groups, setGroups] = useState<GroupResponse[] | null>([]);
   const { user } = useAuthStore();
 
   useSyncCameraWithLocation(mapRef);
-
-  useWatchLocation();
 
   useFocusEffect(
     useCallback(() => {
@@ -39,6 +44,12 @@ export default function Map() {
       fetchGroups();
     }, [])
   );
+
+  useWatchLocation({
+    onLocationChange(coords) {
+      setLocation(coords);
+    },
+  });
 
   const getCurrentLocation = async () => {
     const currentPosition = await getCurrentPositionAsync();
@@ -53,10 +64,16 @@ export default function Map() {
     }
   };
 
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
-  }, []);
-
+  const onGroupClick = async (group: GroupResponse) => {
+    mapRef.current?.animateCamera({
+      center: {
+        latitude: group.latitude,
+        longitude: group.longitude,
+      },
+    });
+    const members = await getGroupMembers(group.id);
+    setMembers(members);
+  };
   type CustomBackgroundProps = StyleProps & {
     children?: React.ReactNode;
   };
@@ -78,12 +95,7 @@ export default function Map() {
         groupName={item.name}
         group_image_url={item.group_image_url}
         onPress={() => {
-          mapRef.current?.animateCamera({
-            center: {
-              latitude: item.latitude,
-              longitude: item.longitude,
-            },
-          });
+          onGroupClick(item);
         }}
       />
     ),
@@ -117,7 +129,7 @@ export default function Map() {
         googleRenderer="LEGACY"
       >
         {groups?.map((item, index) => (
-          // 약속장소 마커
+          // 모임장소 마커
           <CustomMarkerView
             key={index}
             coordinate={{
@@ -142,9 +154,8 @@ export default function Map() {
         }
       </MapView>
       <CustomBottomSheet
-        ref={bottomSheetRef}
+        ref={groupRef}
         enableDynamicSizing
-        onChange={handleSheetChanges}
         enablePanDownToClose={false}
         contentContainerClassName="px-[32px]"
         backgroundComponent={(props) => (
@@ -163,7 +174,12 @@ export default function Map() {
           <Text className="text-white text-[20px] font-semibold">
             나의 모임들
           </Text>
-          <TouchableOpacity onPress={() => router.push("/meeting")}>
+          <TouchableOpacity
+            onPress={() => {
+              createRef.current?.expand();
+              groupRef.current?.close();
+            }}
+          >
             <Image
               source={require("@/assets/images/add_group.png")}
               className="w-5 h-5"
@@ -187,6 +203,62 @@ export default function Map() {
           ItemSeparatorComponent={() => <View className="w-[12px]" />}
         />
       </CustomBottomSheet>
+      <CustomBottomSheet
+        enableDynamicSizing
+        index={-1}
+        ref={createRef}
+        enablePanDownToClose={true}
+        contentContainerClassName="px-[32px]"
+        onClose={() => {
+          groupRef.current?.expand();
+        }}
+      >
+        <Text className="text-white text-[20px] font-semibold">그룹</Text>
+        <View className="flex-row mt-[20px]">
+          <ConfirmButton
+            className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center flex-1"
+            title="모임 생성"
+            onPress={() => {
+              router.push("/meeting");
+            }}
+          />
+          <View className="w-[10px]" />
+          <ConfirmButton
+            className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center flex-1"
+            title="모임 참여"
+            onPress={() => {
+              router.push("/invite");
+            }}
+          />
+        </View>
+      </CustomBottomSheet>
+      {/* <CustomBottomSheet
+        ref={memberRef}
+        enableDynamicSizing
+        index={-1}
+        contentContainerClassName="px-[32px]"
+      >
+        <View className="flex-row items-center justify-between">
+          <Text className="text-white text-[20px] font-semibold">
+            참여자 목록
+          </Text>
+        </View>
+        <FlatList
+          data={members}
+          renderItem={(member) => {
+            return (
+              <UserAvatar
+                imageUrl={member.item.profile_image ?? ""}
+                username={member.item.nickname}
+                onPress={() => {}}
+              />
+            );
+          }}
+          horizontal
+          contentContainerClassName="pt-[20px] pb-[20px]"
+          ItemSeparatorComponent={() => <View className="w-[12px]" />}
+        />
+      </CustomBottomSheet> */}
     </View>
   );
 }

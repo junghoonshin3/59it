@@ -1,6 +1,7 @@
 import { useEffect, RefObject } from "react";
 import MapView, { Region } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
+import { updateMyLocation } from "@/services/supabase/supabaseService";
 
 export function useSyncCameraWithLocation(mapRef: RefObject<MapView>) {
   const location = useLocationStore((state) => state.location);

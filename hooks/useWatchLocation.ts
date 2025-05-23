@@ -1,34 +1,27 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import * as Location from "expo-location";
-import { useLocationStore } from "@/store/useLocationStore";
 
-export const useWatchLocation = () => {
-  const locationSubscription = useRef<Location.LocationSubscription | null>(
-    null
-  );
-  const { setLocation } = useLocationStore();
+type WatchLocationProps = {
+  onLocationChange: (coords: { latitude: number; longitude: number }) => void;
+};
 
+export const useWatchLocation = ({ onLocationChange }: WatchLocationProps) => {
   useEffect(() => {
-    let isMounted = true;
+    let subscriber: Location.LocationSubscription;
 
     const startWatching = async () => {
-      locationSubscription.current = await Location.watchPositionAsync(
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+
+      subscriber = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          timeInterval: 5000, // 5초마다
-          distanceInterval: 300, // 10m 이동 시
+          timeInterval: 5000,
+          distanceInterval: 100,
         },
         (location) => {
-          if (isMounted) {
-            console.log("foreground location : ", location);
-            setLocation({
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-            }); // useLocationStore 안에 있는 setter 사용
-          }
-        },
-        (error) => {
-          console.log("error >>>>> ", error);
+          const { latitude, longitude } = location.coords;
+          onLocationChange({ latitude, longitude });
         }
       );
     };
@@ -36,9 +29,7 @@ export const useWatchLocation = () => {
     startWatching();
 
     return () => {
-      isMounted = false;
-      locationSubscription.current?.remove();
-      locationSubscription.current = null;
+      if (subscriber) subscriber.remove();
     };
   }, []);
 };
