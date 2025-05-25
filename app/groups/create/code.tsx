@@ -9,7 +9,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import { View, Text } from "react-native";
 
-export default function InviteCode() {
+export default function CreateCode() {
   const router = useRouter();
   const [imageNm, setImageNm] = useState("");
   const { invite_code, group_id } = useLocalSearchParams<{
@@ -33,7 +33,7 @@ export default function InviteCode() {
       <Topbar
         title="코드생성"
         onPress={router.back}
-        image={require("../../assets/images/back_button.png")}
+        image={require("@/assets/images/back_button.png")}
       />
       <Text className="text-[14px] text-[#9EA3B2] text-regular mt-[40px] leading-[22px]">{`초대 코드가 생성되었습니다!\n코드를 친구에게 공유하세요.\n해당 코드는 24시간 유지됩니다.`}</Text>
       <InviteCodeText code={invite_code} className="mt-[40px]" />
@@ -41,7 +41,7 @@ export default function InviteCode() {
         className="mt-[20px]"
         label="모임사진"
         placeholder="모임을 대표하는 사진을 설정해보세요."
-        icon={require("../../assets/images/group_image.png")}
+        icon={require("@/assets/images/group_image.png")}
         readOnly={true}
         error=""
         value={imageNm}

@@ -1,5 +1,11 @@
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import MapView, { PROVIDER_GOOGLE, Region } from "react-native-maps";
 import { useLocationStore } from "@/store/useLocationStore";
 import { Loading } from "@/components/loading";
@@ -14,15 +20,10 @@ import { router, useFocusEffect } from "expo-router";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import { GroupResponse, UserProfile } from "@/types/types";
 import { useAuthStore } from "@/store/useAuthStore";
-import {
-  getGroupMembers,
-  getMyGroups,
-  updateMyLocation,
-} from "@/services/supabase/supabaseService";
+import { getMyGroups } from "@/services/supabase/supabaseService";
 import { GroupItem } from "@/components/GroupItem";
 import { getCurrentPositionAsync } from "@/services/locationService";
 import ConfirmButton from "@/components/confirmbutton";
-import { UserAvatar } from "@/components/useravatar";
 
 export default function Map() {
   const mapRef = useRef<MapView>(null);
@@ -65,14 +66,10 @@ export default function Map() {
   };
 
   const onGroupClick = async (group: GroupResponse) => {
-    mapRef.current?.animateCamera({
-      center: {
-        latitude: group.latitude,
-        longitude: group.longitude,
-      },
+    router.push({
+      pathname: "/groups/members",
+      params: { groupId: `${group.id}`, hostId: `${group.host_id}` },
     });
-    const members = await getGroupMembers(group.id);
-    setMembers(members);
   };
   type CustomBackgroundProps = StyleProps & {
     children?: React.ReactNode;
@@ -219,7 +216,7 @@ export default function Map() {
             className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center flex-1"
             title="모임 생성"
             onPress={() => {
-              router.push("/meeting");
+              router.push("/groups/create");
             }}
           />
           <View className="w-[10px]" />
@@ -227,38 +224,11 @@ export default function Map() {
             className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center flex-1"
             title="모임 참여"
             onPress={() => {
-              router.push("/invite");
+              router.push("/groups/join");
             }}
           />
         </View>
       </CustomBottomSheet>
-      {/* <CustomBottomSheet
-        ref={memberRef}
-        enableDynamicSizing
-        index={-1}
-        contentContainerClassName="px-[32px]"
-      >
-        <View className="flex-row items-center justify-between">
-          <Text className="text-white text-[20px] font-semibold">
-            참여자 목록
-          </Text>
-        </View>
-        <FlatList
-          data={members}
-          renderItem={(member) => {
-            return (
-              <UserAvatar
-                imageUrl={member.item.profile_image ?? ""}
-                username={member.item.nickname}
-                onPress={() => {}}
-              />
-            );
-          }}
-          horizontal
-          contentContainerClassName="pt-[20px] pb-[20px]"
-          ItemSeparatorComponent={() => <View className="w-[12px]" />}
-        />
-      </CustomBottomSheet> */}
     </View>
   );
 }

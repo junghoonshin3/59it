@@ -178,7 +178,7 @@ export const getGroupMembers = async (
   }
 
   // 조인된 user 정보만 추출
-  const users = data?.map((item) => item.user as UserProfile) ?? [];
+  const users = data?.map((item: any) => item.user as UserProfile) ?? [];
   return users;
 };
 

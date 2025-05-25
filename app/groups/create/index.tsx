@@ -22,7 +22,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { createGroup } from "@/services/supabase/supabaseService";
 import { GroupRequest } from "@/types/types";
 
-export default function Meeting() {
+export default function CreateGroup() {
   const router = useRouter();
   const {
     searchPlaces,
@@ -102,7 +102,7 @@ export default function Meeting() {
 
     if (data) {
       router.push(
-        `/invite/InviteCode?invite_code=${data.invite_code}&group_id=${data.id}`
+        `/groups/create/code?invite_code=${data.invite_code}&group_id=${data.id}`
       );
     }
   };
@@ -121,13 +121,13 @@ export default function Meeting() {
         <Topbar
           title="모임 생성"
           onPress={router.back}
-          image={require("../../assets/images/back_button.png")}
+          image={require("@/assets/images/back_button.png")}
         />
         <FormField
           className="mt-[20px]"
           label="모임명"
           placeholder="모임명을 입력하세요."
-          icon={require("../../assets/images/groups_create.png")}
+          icon={require("@/assets/images/groups_create.png")}
           readOnly={false}
           error="모임명을 입력해주세요."
           value={groupNm}
@@ -138,7 +138,7 @@ export default function Meeting() {
           className="mt-[20px]"
           label="모임장소"
           placeholder="모임장소를 검색하세요."
-          icon={require("../../assets/images/search_places.png")}
+          icon={require("@/assets/images/search_places.png")}
           readOnly={true}
           error="모임장소를 선택해주세요."
           value={`${selectedPlace?.displayName?.text ?? ""}`}
@@ -149,7 +149,7 @@ export default function Meeting() {
           className="mt-[20px]"
           label="모임날짜"
           placeholder="모임날짜를 선택하세요."
-          icon={require("../../assets/images/month_calendar.png")}
+          icon={require("@/assets/images/month_calendar.png")}
           readOnly={true}
           error="모임날짜를 선택해주세요."
           value={selectedDateTime.format("YYYY-MM-DD")}
@@ -160,7 +160,7 @@ export default function Meeting() {
           className="mt-[20px]"
           label="모임시간"
           placeholder="모임시간을 선택하세요."
-          icon={require("../../assets/images/access_time.png")}
+          icon={require("@/assets/images/access_time.png")}
           readOnly={true}
           error="모임시간을 선택해주세요."
           value={selectedDateTime.format("A hh:mm")}
@@ -189,7 +189,7 @@ export default function Meeting() {
             className="w-full h-[80px]"
             placeholder="모임장소를 검색해주세요."
             value={searchQuery}
-            icon={require("../../assets/images/search_places.png")}
+            icon={require("@/assets/images/search_places.png")}
             onChangeText={setSearchQuery}
             onSearch={onSearch}
           />
@@ -208,7 +208,7 @@ export default function Meeting() {
               />
             )}
             ItemSeparatorComponent={() => (
-              <View className="w-full h-[1px] bg-white"></View>
+              <View className="w-full h-[1px] bg-white" />
             )}
             onEndReached={onEndReached}
           />

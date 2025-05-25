@@ -11,7 +11,7 @@ import {
   joinGroup,
 } from "@/services/supabase/supabaseService";
 
-export default function Invite() {
+export default function JoinGroup() {
   const router = useRouter();
   const { user } = useAuthStore();
   const handleJoinByInviteCode = async (inviteCode: string) => {
@@ -31,7 +31,7 @@ export default function Invite() {
         <Topbar
           title="코드입력"
           onPress={router.back}
-          image={require("../../assets/images/back_button.png")}
+          image={require("@/assets/images/back_button.png")}
         />
 
         <Text className="text-[14px] text-[#9EA3B2] text-regular mt-[40px] leading-[22px]">{`친구에게 받은 초대 코드를 입력하세요!\n해당 코드는 24시간 유지됩니다.`}</Text>
