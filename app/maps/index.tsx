@@ -122,7 +122,7 @@ export default function Map() {
         zoomTapEnabled={false}
         toolbarEnabled={false}
         maxZoomLevel={25}
-        minZoomLevel={13}
+        minZoomLevel={10}
         googleRenderer="LEGACY"
       >
         {groups?.map((item, index) => (

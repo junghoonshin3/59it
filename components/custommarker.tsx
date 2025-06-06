@@ -11,9 +11,8 @@ type MarkerViewProps = {
 
 export const CustomMarkerView: FunctionComponent<MarkerViewProps> = memo(
   ({ imageUrl, name, isOnline, coordinate }) => {
-    // console.log("imageUrl : ", imageUrl);
     let content = (
-      <View className="w-[38px] h-[38px] rounded-full items-center justify-center border-[2px] border-[#0075FF] bg-background">
+      <View className="rounded-full items-center justify-center border-[2px] border-[#0075FF] bg-background">
         <Image
           source={
             imageUrl
@@ -21,17 +20,21 @@ export const CustomMarkerView: FunctionComponent<MarkerViewProps> = memo(
               : require("../assets/images/default_group_image.png")
           }
           resizeMode="contain"
-          className={`w-[30px] h-[30px] rounded-full`}
+          className={`w-[40px] h-[40px] rounded-full`}
         />
-        {/* 온라인 상태 점 */}
-        {isOnline && (
-          <View className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-500" />
-        )}
       </View>
     );
     let callOut = (
-      <Callout className="flex-1">
-        <Text className="bg-white ">{name}</Text>
+      <Callout tooltip={true}>
+        <View className="p-[10px] bg-[#181A20CC] rounded-[8px]">
+          <Text
+            className="text-white w-full"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {name}
+          </Text>
+        </View>
       </Callout>
     );
     return (
