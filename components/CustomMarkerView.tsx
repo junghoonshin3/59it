@@ -5,19 +5,18 @@ import { Callout, Marker } from "react-native-maps";
 type MarkerViewProps = {
   imageUrl?: string;
   name?: string;
-  isOnline?: boolean;
   coordinate: any;
 };
 
 export const CustomMarkerView: FunctionComponent<MarkerViewProps> = memo(
-  ({ imageUrl, name, isOnline, coordinate }) => {
+  ({ imageUrl, name, coordinate }) => {
     let content = (
       <View className="rounded-full items-center justify-center border-[2px] border-[#0075FF] bg-background">
         <Image
           source={
             imageUrl
               ? { uri: imageUrl }
-              : require("../assets/images/default_group_image.png")
+              : require("@/assets/images/default_group_image.png")
           }
           resizeMode="contain"
           className={`w-[40px] h-[40px] rounded-full`}
@@ -39,7 +38,7 @@ export const CustomMarkerView: FunctionComponent<MarkerViewProps> = memo(
     );
     return (
       <Marker
-        className="justify-center items-center"
+        className="flex-1 justify-center items-center"
         tracksInfoWindowChanges={false}
         coordinate={coordinate}
         tracksViewChanges={false}

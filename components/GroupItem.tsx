@@ -22,7 +22,7 @@ export const GroupItem = ({
           source={
             group_image_url
               ? { uri: group_image_url }
-              : require("../assets/images/default_group_image.png")
+              : require("@/assets/images/default_group_image.png")
           }
           resizeMode="contain"
           className={`${

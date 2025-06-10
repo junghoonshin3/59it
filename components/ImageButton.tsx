@@ -4,6 +4,7 @@ import {
   Image,
   GestureResponderEvent,
   ImageSourcePropType,
+  StyleProp,
 } from "react-native";
 import clsx from "clsx";
 

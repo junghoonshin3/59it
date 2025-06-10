@@ -1,13 +1,10 @@
 import {
   View,
-  Text,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  ScrollView,
   Keyboard,
   StatusBar,
-  Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Topbar from "@/components/topbar";
@@ -63,7 +60,7 @@ export default function SignUp() {
         <View className="flex-1">
           <Topbar
             title="가입하기"
-            image={require("../../assets/images/back_button.png")}
+            image={require("@/assets/images/back_button.png")}
             onPress={() => router.back()}
           />
 
@@ -71,7 +68,7 @@ export default function SignUp() {
             className="mt-[20px]"
             label="이메일"
             placeholder="이메일을 입력하세요"
-            icon={require("../../assets/images/email_field.png")}
+            icon={require("@/assets/images/email_field.png")}
             readOnly={true}
             error=""
             value=""
@@ -81,7 +78,7 @@ export default function SignUp() {
           <FormField
             label="닉네임"
             placeholder="닉네임을 입력하세요"
-            icon={require("../../assets/images/name_field.png")}
+            icon={require("@/assets/images/name_field.png")}
             readOnly={false}
             error=""
             value={nickName}

@@ -44,7 +44,14 @@ export default function JoinGroup() {
         <ConfirmButton
           className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px]"
           title="참여하기"
-          onPress={() => router.replace("/maps")}
+          onPress={() =>
+            router.dismissTo({
+              pathname: "/maps",
+              params: {
+                initRef: "true",
+              },
+            })
+          }
         />
       </View>
     </TouchableWithoutFeedback>

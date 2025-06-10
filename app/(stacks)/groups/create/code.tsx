@@ -39,7 +39,7 @@ export default function CreateCode() {
       <InviteCodeText code={invite_code} className="mt-[40px]" />
       <FormField
         className="mt-[20px]"
-        label="모임사진"
+        label="모임사진(선택)"
         placeholder="모임을 대표하는 사진을 설정해보세요."
         icon={require("@/assets/images/group_image.png")}
         readOnly={true}
@@ -51,7 +51,12 @@ export default function CreateCode() {
       <ConfirmButton
         className="bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px]"
         title="친구에게 공유하기"
-        onPress={() => router.dismissAll()}
+        onPress={() => {
+          router.dismissTo({
+            pathname: "/maps",
+            params: { initRef: "true" },
+          });
+        }}
       />
     </View>
   );

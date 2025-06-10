@@ -24,15 +24,8 @@ import { GroupRequest } from "@/types/types";
 
 export default function CreateGroup() {
   const router = useRouter();
-  const {
-    searchPlaces,
-    places,
-    loading,
-    searchQuery,
-    setSearchQuery,
-    // selectedPlace,
-    // setSelectedPlace,
-  } = usePlaceStore();
+  const { searchPlaces, places, loading, searchQuery, setSearchQuery } =
+    usePlaceStore();
   const { user } = useAuthStore();
   const [groupNm, setGroupNm] = useState("");
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);

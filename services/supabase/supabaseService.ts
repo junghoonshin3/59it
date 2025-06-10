@@ -48,7 +48,7 @@ export const getProfile = async (): Promise<Profile | null> => {
 export const registerProfile = async (user: User) => {
   const { data, error } = await supabase
     .from("profiles")
-    .insert<Profile>([
+    .upsert<Profile>([
       {
         id: user.id,
         nickname: user.user_metadata.name,
@@ -209,4 +209,29 @@ export const updateMyLocation = async ({
   if (error) {
     console.error("Failed to update location:", error.message);
   }
+};
+
+export const deleteGroup = async (groupId: string) => {
+  const { data, error } = await supabase.functions.invoke("delete-group", {
+    body: {
+      group_id: groupId,
+    },
+  });
+  if (error) {
+    return error;
+  }
+  return data;
+};
+
+export const leaveGroup = async (groupId: string, userId: string) => {
+  const { data, error } = await supabase.functions.invoke("leave-group", {
+    body: {
+      group_id: groupId,
+      user_id: userId,
+    },
+  });
+  if (error) {
+    return error;
+  }
+  return data;
 };

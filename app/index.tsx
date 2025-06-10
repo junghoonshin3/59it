@@ -5,6 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { hasLocationPermissions } from "@/services/locationService";
 import * as SplashScreen from "expo-splash-screen";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Loading } from "@/components/loading";
 
 export default function index() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function index() {
         } else if (!session || !user) {
           router.replace("/auth/signin");
         } else {
-          router.replace("/maps");
+          router.replace("/(stacks)/maps");
         }
       } catch (e) {
         console.error("초기화 오류:", e);
@@ -42,7 +43,5 @@ export default function index() {
     return null; // Splash가 켜져 있으므로 로딩 UI 불필요
   }
 
-  return (
-    <View className="flex-1 justify-center items-center bg-background"></View>
-  );
+  return <Loading></Loading>;
 }

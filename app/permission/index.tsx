@@ -1,15 +1,13 @@
-import { View, Text, Image, Linking } from "react-native";
+import { View, Text, Image, Linking, StatusBar } from "react-native";
 import React, { useState } from "react";
 import PermissionItem from "@/components/permissionitem";
 import ConfirmButton from "@/components/confirmbutton";
-import {
-  requestLocationPermissionsAsync,
-  startLocationUpdatesAsync,
-} from "@/services/locationService";
+import { requestLocationPermissionsAsync } from "@/services/locationService";
 import { useRouter } from "expo-router";
-import CommonModal, { CommonModalProps } from "@/components/commonpopup";
+import CommonModal from "@/components/commonpopup";
 import { storage } from "@/utils/storage";
 import { useAuthStore } from "@/store/useAuthStore";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Permission() {
   const router = useRouter();
@@ -70,14 +68,15 @@ export default function Permission() {
   };
 
   return (
-    <View className="flex-1 bg-background ps-[32px] pe-[32px]">
+    <SafeAreaView className="flex-1 bg-background ps-[32px] pe-[32px]">
+      <StatusBar barStyle={"light-content"} />
       <Text className="text-[24px] leading-[30px] font-medium tracking-[-0.5px] text-white mt-[30px]">{`59it 사용을 위해\n앱 권한을 허용해주세요`}</Text>
       <View className=" mt-[30px] bg-[#1F222A] rounded-[16px] pt-[20px] ps-[20px] pe-[20px] pb-[20px]">
         <Text className="text-[14px] leading-[22px] font-medium tracking-[-0.5px] text-white mb-[15px]">
           선택권한
         </Text>
         <PermissionItem
-          icon={require("../../assets/images/notification_bell_white.png")}
+          icon={require("@/assets/images/notification_bell_white.png")}
           title="알림"
           description="앱 알림 수신시 필요"
         />
@@ -85,7 +84,7 @@ export default function Permission() {
           필수권한
         </Text>
         <PermissionItem
-          icon={require("../../assets/images/location.png")}
+          icon={require("@/assets/images/location.png")}
           title="위치"
           description="사용자의 위치를 파악시 필요"
         />
@@ -112,6 +111,6 @@ export default function Permission() {
         onConfirm={modalContent.onConfirm}
         onCancel={() => setModalVisible(false)}
       />
-    </View>
+    </SafeAreaView>
   );
 }

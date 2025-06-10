@@ -36,8 +36,8 @@ export default function TimeInputField({
   const [inputError, setInputError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
 
-  const hourRef = useRef<TextInput>(null);
-  const minuteRef = useRef<TextInput>(null);
+  const hourRef = useRef<TextInput | null>(null);
+  const minuteRef = useRef<TextInput | null>(null);
 
   useEffect(() => {
     const keyboardHideListener = Keyboard.addListener("keyboardDidHide", () => {
