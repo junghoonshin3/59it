@@ -27,7 +27,7 @@ export default function index() {
         } else if (!session || !user) {
           router.replace("/auth/signin");
         } else {
-          router.replace("/(stacks)/maps");
+          router.replace("/maps");
         }
       } catch (e) {
         console.error("초기화 오류:", e);

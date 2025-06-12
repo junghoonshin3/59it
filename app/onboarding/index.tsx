@@ -16,7 +16,7 @@ export default function Onboarding() {
   const finishOnboarding = async () => {
     await storage.setBoolean("onboardingSeen", true);
     if (session) {
-      router.replace("/(stacks)/maps"); // 이미 로그인을 한 경우 맵화면으로 이동
+      router.replace("/maps"); // 이미 로그인을 한 경우 맵화면으로 이동
     } else {
       router.replace("/auth/signin"); // 로그인을 위해 signin 화면으로 이동
     }

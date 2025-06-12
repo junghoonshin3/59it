@@ -6,8 +6,6 @@ import "react-native-get-random-values";
 import { LocaleConfig } from "react-native-calendars";
 import dayjs from "dayjs";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { Drawer } from "expo-router/drawer";
-import CustomDrawerContent from "@/components/CustomDrawerContent";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -60,6 +58,7 @@ GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 });
 export default function RootLayout() {
+  const insets = useSafeAreaInsets();
   return (
     <GestureHandlerRootView
       style={{
@@ -67,30 +66,30 @@ export default function RootLayout() {
         backgroundColor: "#181A20",
       }}
     >
-      <Drawer
-        drawerContent={CustomDrawerContent}
+      <Stack
         screenOptions={{
-          drawerItemStyle: { display: "none" },
           headerShown: false,
+          statusBarStyle: "light",
+          contentStyle: {
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: "#181A20",
+          },
         }}
       >
-        <Drawer.Screen
-          name="(stacks)"
+        <Stack.Screen
+          name="maps/index"
           options={{
-            drawerItemStyle: { display: "flex" },
-            drawerLabelStyle: { color: "#ffffff" },
-            drawerLabel: "지도",
+            statusBarStyle: "dark",
+            statusBarTranslucent: true,
+            statusBarBackgroundColor: "#ffffff00",
+            contentStyle: {
+              paddingBottom: insets.bottom,
+              backgroundColor: "#181A20",
+            },
           }}
         />
-        <Drawer.Screen
-          name="profile/index"
-          options={{
-            drawerItemStyle: { display: "flex" },
-            drawerLabelStyle: { color: "#ffffff" },
-            drawerLabel: "내 정보",
-          }}
-        />
-      </Drawer>
+      </Stack>
     </GestureHandlerRootView>
   );
 }

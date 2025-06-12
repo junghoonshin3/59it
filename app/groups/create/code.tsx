@@ -54,7 +54,6 @@ export default function CreateCode() {
         onPress={() => {
           router.dismissTo({
             pathname: "/maps",
-            params: { initRef: "true" },
           });
         }}
       />

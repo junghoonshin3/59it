@@ -3,6 +3,7 @@ import { StyleSheet } from "react-native";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetProps,
+  BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 
 type CustomBottomSheetProps = BottomSheetProps & {
@@ -19,9 +20,10 @@ const CustomBottomSheet = forwardRef<BottomSheet, CustomBottomSheetProps>(
         handleIndicatorStyle={styles.handleIndicatorStyle}
         {...props}
       >
-        <BottomSheetView className={contentContainerClassName}>
+        {children}
+        {/* <BottomSheetView className={contentContainerClassName}>
           {children}
-        </BottomSheetView>
+        </BottomSheetView> */}
       </BottomSheet>
     );
   }
