@@ -1,6 +1,13 @@
-import { createClient, Session, User } from "@supabase/supabase-js";
+import { createClient, User } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { GroupRequest, GroupResponse, UserProfile } from "@/types/types";
+import {
+  Group,
+  GroupMember,
+  GroupMemberWithLocation,
+  GroupRequest,
+  GroupResponse,
+  UserProfile,
+} from "@/types/types";
 
 export type Profile = {
   id: string;
@@ -101,19 +108,23 @@ export const updateGroup = async (
   return true;
 };
 
-export const getMyGroups = async (
-  user_id: string
-): Promise<GroupResponse[] | []> => {
+export const getMyGroups = async (user_id: string): Promise<Group[] | null> => {
   const { data, error } = await supabase
     .from("group_members")
-    .select("group:groups(*)") // groups 테이블 전체를 조인해서 가져옴
+    .select(
+      `
+      group:groups (
+        *)
+    `
+    )
     .eq("user_id", user_id);
 
   if (error) {
     console.error("내가 참여한 그룹 가져오기 실패:", error);
+    return null;
   }
-  const groups: any[] | [] = data?.map((item) => item.group) ?? [];
-  return groups as GroupResponse[];
+  if (!data) return [];
+  return data as unknown as Group[];
 };
 
 export const findGroupByInviteCode = async (
@@ -131,6 +142,22 @@ export const findGroupByInviteCode = async (
   }
 
   return data as GroupResponse;
+};
+
+export const getGroupMembers = async (
+  groupId: string,
+  userId: string
+): Promise<GroupMember[]> => {
+  const { data, error } = await supabase
+    .from("group_members")
+    .select("member:profiles(*), is_sharing_location") // profiles 테이블 조인
+    .eq("group_id", groupId);
+  if (error) {
+    console.error("그룹 멤버 조회 실패:", error);
+    return [];
+  }
+  console.log("data >>> ", JSON.stringify(data));
+  return data as unknown as GroupMember[];
 };
 
 export const joinGroup = async (groupId: string, userId: string) => {
@@ -164,52 +191,108 @@ export const joinGroup = async (groupId: string, userId: string) => {
   }
 };
 
-export const getGroupMembers = async (
-  groupId: string
-): Promise<UserProfile[]> => {
-  const { data, error } = await supabase
-    .from("group_members")
-    .select("user:profiles(*)") // profiles 테이블 조인
-    .eq("group_id", groupId);
-
-  if (error) {
-    console.error("그룹 멤버 조회 실패:", error);
-    return [];
-  }
-
-  // 조인된 user 정보만 추출
-  const users = data?.map((item: any) => item.user as UserProfile) ?? [];
-  return users;
-};
-
-export const updateMyLocation = async ({
+export const insertOrUpdateLocation = async ({
   user_id,
   group_id,
   latitude,
   longitude,
+  updated_at,
 }: {
   user_id: string;
-  group_id: string | null;
+  group_id: string;
   latitude: number;
   longitude: number;
+  updated_at: string;
 }) => {
-  const { error } = await supabase.from("group_member_locations").upsert(
-    {
-      user_id,
-      group_id,
-      latitude,
-      longitude,
-      updated_at: new Date().toISOString(),
-    },
-    {
-      onConflict: "group_id,user_id",
-    }
-  );
+  const { data, error } = await supabase
+    .from("group_member_locations")
+    .upsert([
+      {
+        user_id,
+        group_id,
+        latitude,
+        longitude,
+        updated_at,
+      },
+    ])
+    .eq("user_id", user_id)
+    .eq("group_id", group_id);
+
+  return { data, error };
+};
+
+/**
+ * 위치 공유 상태를 업데이트합니다.
+ *
+ * @param groupId - 그룹 ID
+ * @param userId - 사용자 ID
+ * @param isSharing - true면 위치 공유 시작, false면 중단
+ * @returns 성공 여부 및 에러 정보
+ */
+export async function updateLocationSharingStatus(
+  groupId: string,
+  userId: string,
+  isSharing: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase
+    .from("group_members")
+    .update({ is_sharing_location: isSharing })
+    .eq("group_id", groupId)
+    .eq("user_id", userId);
 
   if (error) {
-    console.error("Failed to update location:", error.message);
+    console.error("위치 공유 상태 업데이트 실패:", error.message);
+    return { success: false, error: error.message };
   }
-};
+
+  return { success: true };
+}
+
+// export const getGroupMemberDetails = async (
+//   groupId: string
+// ): Promise<GroupMemberWithLocation[]> => {
+//   const { data, error } = await supabase
+//     .from("group_members")
+//     .select(
+//       `
+//     profile:profiles (
+//       id,
+//       nickname,
+//       profile_image,
+//       is_blocked,
+//       role,
+//       created_at
+//     ),
+//     is_sharing_location,
+//     location:group_member_locations (
+//       latitude,
+//       longitude,
+//       updated_at
+//     )
+//   `
+//     )
+//     .eq("group_id", groupId);
+
+//   if (error) {
+//     console.error("그룹 멤버 + 위치 정보 가져오기 실패:", error.message);
+//     return [];
+//   }
+
+//   return (
+//     data?.map(
+//       (item) =>
+//         ({
+//           profile: Array.isArray(item.profile)
+//             ? item.profile[0]
+//             : (item.profile as UserProfile),
+//           is_sharing_location: item.is_sharing_location,
+//           location: Array.isArray(item.location)
+//             ? item.location[0]
+//             : item.location ?? null,
+//         } as GroupMemberWithLocation)
+//     ) ?? []
+//   );
+// };
 
 export const deleteGroup = async (groupId: string) => {
   const { data, error } = await supabase.functions.invoke("delete-group", {

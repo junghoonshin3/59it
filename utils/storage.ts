@@ -1,33 +1,33 @@
 // utils/storage.ts
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 
 export const storage = {
-  // 문자열 저장
+  // 문자열 저장 및 가져오기
   setString: async (key: string, value: string) => {
-    await AsyncStorage.setItem(key, value);
+    await SecureStore.setItemAsync(key, value);
   },
 
   getString: async (key: string): Promise<string | null> => {
-    return await AsyncStorage.getItem(key);
+    return await SecureStore.getItemAsync(key);
   },
 
   // 불린 저장 및 가져오기
   setBoolean: async (key: string, value: boolean) => {
-    await AsyncStorage.setItem(key, value ? "true" : "false");
+    await SecureStore.setItemAsync(key, value ? "true" : "false");
   },
 
   getBoolean: async (key: string): Promise<boolean> => {
-    const val = await AsyncStorage.getItem(key);
+    const val = await SecureStore.getItemAsync(key);
     return val === "true";
   },
 
-  // 객체 저장
+  // 객체 저장 및 가져오기 (JSON 문자열로 변환)
   setObject: async <T>(key: string, value: T) => {
-    await AsyncStorage.setItem(key, JSON.stringify(value));
+    await SecureStore.setItemAsync(key, JSON.stringify(value));
   },
 
   getObject: async <T>(key: string): Promise<T | null> => {
-    const json = await AsyncStorage.getItem(key);
+    const json = await SecureStore.getItemAsync(key);
     if (!json) return null;
     try {
       return JSON.parse(json) as T;
@@ -38,6 +38,6 @@ export const storage = {
 
   // 삭제
   remove: async (key: string) => {
-    await AsyncStorage.removeItem(key);
+    await SecureStore.deleteItemAsync(key);
   },
 };

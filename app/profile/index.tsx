@@ -8,7 +8,6 @@ export default function MyPage() {
   const router = useRouter();
   return (
     <SafeAreaView className="flex-1 bg-background px-[32px]">
-      <StatusBar barStyle={"light-content"} />
       <Topbar
         title="내 정보"
         onPress={router.back}

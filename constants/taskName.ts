@@ -1,3 +1,1 @@
-export const TASK_NAME = {
-  locationTask: "background-location-task",
-} as const;
+export const LOCATION_TASK_NAME = "background-location-task";

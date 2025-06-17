@@ -1,7 +1,7 @@
 import { getLastKnownPositionAsync } from "@/services/locationService";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-type Location = {
+export type Location = {
   latitude: number;
   longitude: number;
 };

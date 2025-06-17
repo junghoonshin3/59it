@@ -34,7 +34,6 @@ export default function SignIn() {
 
   return (
     <SafeAreaView className="w-full h-full bg-background px-[32px] items-center">
-      <StatusBar barStyle={"light-content"} />
       <Topbar title="로그인" />
       <Image
         source={require("@/assets/images/logo.png")}

@@ -21,9 +21,6 @@ const CustomBottomSheet = forwardRef<BottomSheet, CustomBottomSheetProps>(
         {...props}
       >
         {children}
-        {/* <BottomSheetView className={contentContainerClassName}>
-          {children}
-        </BottomSheetView> */}
       </BottomSheet>
     );
   }

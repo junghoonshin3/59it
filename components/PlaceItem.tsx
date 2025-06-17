@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
-import { Place } from "@/store/usePlaceStore";
+import { Place } from "@/types/types";
 
 type PlaceItemProps = {
   onPress: () => void;

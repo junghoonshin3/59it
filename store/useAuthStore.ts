@@ -7,7 +7,6 @@ interface AuthState {
   user: User | null;
   setSession: (session: Session | null) => void;
   setUser: (user: User | null) => void;
-  initAuth: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -16,16 +15,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   setSession: (session) => set({ session }),
   setUser: (user) => set({ user }),
-  initAuth: async () => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const { data: userData } = await supabase.auth.getUser();
-
-    set({
-      session: sessionData?.session ?? null,
-      user: userData?.user ?? null,
-    });
-  },
-
   signOut: async () => {
     await supabase.auth.signOut();
     set({ session: null, user: null });

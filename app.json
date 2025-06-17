@@ -40,7 +40,9 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION"
       ],
-      "edgeToEdgeEnabled": true
+      "foregroundServiceType": ["location"],
+      "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
       "bundler": "metro",
@@ -94,6 +96,13 @@
         {
           "kakaoAppKey": "fd6e5594b5180fb6bf9abd2da504bf6d",
           "kotlinVersion": "1.9.0"
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
         }
       ]
     ],

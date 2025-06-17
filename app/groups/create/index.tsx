@@ -1,17 +1,21 @@
-import { View, Keyboard } from "react-native";
+import { View, Keyboard, Text, StyleSheet } from "react-native";
 import React, { useMemo, useRef, useState } from "react";
 import Topbar from "@/components/topbar";
 import { useRouter } from "expo-router";
 import FormField from "@/components/formfield";
-import { Place, usePlaceStore } from "@/store/usePlaceStore";
-import BottomSheet from "@gorhom/bottom-sheet";
+import {
+  BottomSheetBackdrop,
+  BottomSheetFlashList,
+  BottomSheetFlatList,
+  BottomSheetModal,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import {
   FlatList,
   TouchableWithoutFeedback,
 } from "react-native-gesture-handler";
 import PlaceItem from "@/components/PlaceItem";
 import SearchBar from "@/components/searchBar";
-import CustomBottomSheet from "@/components/CustomBottomSheet";
 import ConfirmButton from "@/components/confirmbutton";
 import { CalendarList } from "react-native-calendars";
 import DatePicker from "react-native-date-picker";
@@ -20,47 +24,69 @@ import "dayjs/locale/ko";
 import Day from "@/components/Day";
 import { useAuthStore } from "@/store/useAuthStore";
 import { createGroup } from "@/services/supabase/supabaseService";
-import { GroupRequest } from "@/types/types";
+import { GroupRequest, Place } from "@/types/types";
+import { fetchPlaceSuggestions } from "@/api/googlePlaces";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function CreateGroup() {
   const router = useRouter();
-  const { searchPlaces, places, loading, searchQuery, setSearchQuery } =
-    usePlaceStore();
   const { user } = useAuthStore();
   const [groupNm, setGroupNm] = useState("");
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const placeBottomSheetRef = useRef<BottomSheet>(null);
-  const calendarBottomSheetRef = useRef<BottomSheet>(null);
-  const timeBottomSheetRef = useRef<BottomSheet>(null);
+  const placeModalRef = useRef<BottomSheetModal>(null);
+  const calendarModalRef = useRef<BottomSheetModal>(null);
+  const timeModalRef = useRef<BottomSheetModal>(null);
   const [selectedDateTime, setSelectedDateTime] = useState(dayjs());
-
+  const [searchText, setSearchText] = useState<string>("");
+  const [searchPlaces, setSearchPlaces] = useState<Place[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
   const selectedDateTimeDate = useMemo(
     () => selectedDateTime,
     [selectedDateTime]
   );
 
   const handleSearch = () => {
-    Keyboard.dismiss();
-    placeBottomSheetRef.current?.expand();
+    placeModalRef.current?.present();
   };
 
   const handleCalendar = () => {
-    Keyboard.dismiss();
-    calendarBottomSheetRef.current?.expand();
+    calendarModalRef.current?.present();
   };
 
   const handleTime = () => {
-    Keyboard.dismiss();
-    timeBottomSheetRef.current?.expand();
+    timeModalRef.current?.present();
   };
 
-  const onSearch = async () => {
-    await searchPlaces();
+  const onSearch = async (nextPageToken: string | null) => {
+    const res = await fetchPlaceSuggestions(
+      {
+        textQuery: searchText,
+        languageCode: "ko",
+        regionCode: "kr",
+        pageToken: nextPageToken ?? undefined,
+      },
+      {
+        apiKey: `${process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY}`,
+        contentType: "application/json",
+        fieldMask:
+          "places.displayName,places.formattedAddress,places.location,nextPageToken",
+      }
+    );
+    const newPlaces = res.data.places || [];
+    const nextToken = res.data.nextPageToken ?? null;
+    console.log("res.data", res.data);
+    setSearchPlaces((prev) => [...prev, ...newPlaces]);
+    setNextPageToken(nextToken);
+    Keyboard.dismiss();
   };
 
   const onEndReached = async () => {
-    if (loading) return;
-    await searchPlaces(true);
+    if (!nextPageToken) {
+      console.log("nextPageToken", nextPageToken);
+      return;
+    }
+    await onSearch(nextPageToken);
   };
 
   const handleSelectDate = (dateStr: string) => {
@@ -169,97 +195,121 @@ export default function CreateGroup() {
           onPress={handleCreateGroup}
           disabled={!isValid}
         />
+        <BottomSheetModal
+          ref={placeModalRef}
+          snapPoints={["100%"]}
+          style={{
+            marginTop: insets.top,
+          }}
+          enablePanDownToClose
+          backgroundStyle={{ backgroundColor: "#1C1C1E" }}
+          handleIndicatorStyle={style.handleIndicatorStyle}
+        >
+          <BottomSheetView className="px-[32px] w-full h-full">
+            <SearchBar
+              className="w-full h-[80px]"
+              placeholder="모임장소를 검색해주세요."
+              value={searchText}
+              icon={require("@/assets/images/search_places.png")}
+              onChangeText={(text) => {
+                setSearchText(text);
+              }}
+              onSearch={() => {
+                onSearch(nextPageToken);
+              }}
+            />
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              contentContainerClassName="pt-[10px] pb-[10px]"
+              data={searchPlaces}
+              renderItem={({ item }) => (
+                <PlaceItem
+                  place={item}
+                  onPress={() => {
+                    setSelectedPlace(item);
+                    placeModalRef.current?.dismiss();
+                  }}
+                />
+              )}
+              ListEmptyComponent={() => (
+                <View className="flex-1 items-center justify-center">
+                  <Text className="text-white text-[16px] font-semibold">
+                    검색한 장소가 없습니다.
+                  </Text>
+                </View>
+              )}
+              ItemSeparatorComponent={() => (
+                <View className="w-full h-[1px] bg-white" />
+              )}
+              onEndReached={onEndReached}
+            />
+          </BottomSheetView>
+        </BottomSheetModal>
 
-        {/* 장소 바텀시트 */}
-        <CustomBottomSheet
-          ref={placeBottomSheetRef}
+        <BottomSheetModal
+          ref={calendarModalRef}
           snapPoints={["100%"]}
           enablePanDownToClose={true}
-          index={-1}
-          contentContainerClassName="ps-[32px] pe-[32px] flex-1"
-        >
-          <SearchBar
-            className="w-full h-[80px]"
-            placeholder="모임장소를 검색해주세요."
-            value={searchQuery}
-            icon={require("@/assets/images/search_places.png")}
-            onChangeText={setSearchQuery}
-            onSearch={onSearch}
-          />
-          <FlatList
-            style={{ flex: 1 }}
-            showsHorizontalScrollIndicator={false}
-            contentContainerClassName="pt-[20px] pb-[20px]"
-            data={places}
-            renderItem={({ item }) => (
-              <PlaceItem
-                place={item}
-                onPress={() => {
-                  setSelectedPlace(item);
-                  placeBottomSheetRef.current?.close();
-                }}
-              />
-            )}
-            ItemSeparatorComponent={() => (
-              <View className="w-full h-[1px] bg-white" />
-            )}
-            onEndReached={onEndReached}
-          />
-        </CustomBottomSheet>
-
-        {/* 달력 바텀시트 */}
-        <CustomBottomSheet
-          ref={calendarBottomSheetRef}
-          index={-1}
-          enablePanDownToClose={true}
           enableContentPanningGesture={false}
-          contentContainerClassName="flex-1"
+          backgroundStyle={{ backgroundColor: "#1C1C1E" }}
+          handleIndicatorStyle={style.handleIndicatorStyle}
         >
-          <CalendarList
-            dayComponent={({ date, state }) => (
-              <Day
-                date={date}
-                state={state}
-                selectedDate={selectedDateTime.format("YYYY-MM-DD")}
-                onSelectDate={handleSelectDate}
-                onClose={() => calendarBottomSheetRef.current?.close()}
-              />
-            )}
-            monthFormat="yyyy년 MM월"
-            pastScrollRange={0}
-            futureScrollRange={12}
-            current={dayjs().format("YYYY-MM-DD")}
-            theme={{
-              textDayStyle: {
-                flex: 1,
-              },
-              dayTextColor: "#FFFFFF",
-              calendarBackground: "#181A20",
-              monthTextColor: "#FFFFFF",
-              textDayFontFamily: "NotoSansKR-Medium",
-              textMonthFontFamily: "NotoSansKR-Medium",
-            }}
-          />
-        </CustomBottomSheet>
-
-        {/* 시간 바텀시트 */}
-        <CustomBottomSheet
-          ref={timeBottomSheetRef}
-          index={-1}
+          <BottomSheetView className="w-full h-full">
+            <CalendarList
+              dayComponent={({ date, state }) => (
+                <Day
+                  date={date}
+                  state={state}
+                  selectedDate={selectedDateTime.format("YYYY-MM-DD")}
+                  onSelectDate={handleSelectDate}
+                  onClose={() => calendarModalRef.current?.dismiss()}
+                />
+              )}
+              monthFormat="yyyy년 MM월"
+              pastScrollRange={0}
+              futureScrollRange={12}
+              current={dayjs().format("YYYY-MM-DD")}
+              theme={{
+                textDayStyle: {
+                  flex: 1,
+                },
+                dayTextColor: "#FFFFFF",
+                calendarBackground: "#181A20",
+                monthTextColor: "#FFFFFF",
+                textDayFontFamily: "NotoSansKR-Medium",
+                textMonthFontFamily: "NotoSansKR-Medium",
+              }}
+            />
+          </BottomSheetView>
+        </BottomSheetModal>
+        <BottomSheetModal
+          handleIndicatorStyle={style.handleIndicatorStyle}
+          ref={timeModalRef}
+          enableDynamicSizing
           enablePanDownToClose={true}
-          enableContentPanningGesture={false}
-          contentContainerClassName="flex-1 justify-center items-center"
+          backgroundStyle={{ backgroundColor: "#1C1C1E" }}
         >
-          <DatePicker
-            style={{ flex: 1 }}
-            dividerColor="#FFFFFF"
-            theme="dark"
-            date={selectedDateTimeDate.toDate()}
-            mode="time"
-            onDateChange={handleSelectTime}
-          />
-        </CustomBottomSheet>
+          <BottomSheetView className="flex-1 justify-center items-center">
+            <DatePicker
+              style={{ flex: 1 }}
+              dividerColor="#FFFFFF"
+              theme="dark"
+              date={selectedDateTimeDate.toDate()}
+              mode="time"
+              onDateChange={handleSelectTime}
+            />
+          </BottomSheetView>
+        </BottomSheetModal>
       </View>
     </TouchableWithoutFeedback>
   );
 }
+
+const style = StyleSheet.create({
+  handleIndicatorStyle: {
+    marginTop: 10,
+    width: 50,
+    height: 5,
+    backgroundColor: "#626877",
+  },
+});

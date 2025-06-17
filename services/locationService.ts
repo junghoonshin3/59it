@@ -1,16 +1,9 @@
-import { TASK_NAME } from "@/constants/taskName";
+import { LOCATION_TASK_NAME } from "@/constants/taskName";
 import * as Location from "expo-location";
-import * as TaskManager from "expo-task-manager";
-
-// TaskManager.defineTask(TASK_NAME.locationTask, async ({ data, error }) => {
-//   if (error) {
-//     console.error(`Location collection error: ${error.message}`);
-//     return;
-//   }
-//   const lastLocation = (data as { locations: Location.LocationObject[] })
-//     .locations[0];
-//   console.log("위치 데이터:", lastLocation);
-// });
+import {
+  unregisterAllTasksAsync,
+  unregisterTaskAsync,
+} from "expo-task-manager";
 
 /**
  * Requests foreground and background location permissions.
@@ -44,43 +37,48 @@ export async function requestLocationPermissionsAsync() {
   };
 }
 
-export async function watchPositionAsync() {}
-
-/**
- * Starts background location updates if not already started.
- */
-export async function startLocationUpdatesAsync() {
-  const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-    TASK_NAME.locationTask
-  );
-
-  if (hasStarted) {
-    console.log("Background location already started.");
-    // await Location.stopLocationUpdatesAsync(TASK_NAME.locationTask);
-    return;
-  }
-  console.log("Background location updates started.");
-
-  await Location.startLocationUpdatesAsync(TASK_NAME.locationTask, {
-    accuracy: Location.Accuracy.Highest,
-    timeInterval: 1000,
-    distanceInterval: 1,
-    showsBackgroundLocationIndicator: true,
-    foregroundService: {
-      notificationTitle: "Using your location",
-      notificationBody:
-        "To turn off, go back to the app and switch something off.",
-    },
-  });
-}
-
 /**
  * Stops background location updates if running.
  */
 export async function stopLocationUpdatesAsync() {
-  await Location.stopLocationUpdatesAsync(TASK_NAME.locationTask);
-  console.log("Background location updates stopped.");
+  try {
+    await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
+    await unregisterAllTasksAsync();
+    console.log("Background location updates stopped.");
+  } catch (e) {
+    console.log("stopLocationUpdatesAsync >>>>>>>>>>>>>>>>>>>>>>> ", e);
+  }
 }
+
+export const startForegroundTracking = async () => {
+  await Location.watchPositionAsync(
+    {
+      accuracy: Location.Accuracy.High,
+      timeInterval: 5000, // 5초마다
+      distanceInterval: 50, // 10m 이동마다
+    },
+    (location) => {
+      console.log("포그라운드 위치:", location.coords);
+    }
+  );
+};
+
+export const startBackgroundTracking = async () => {
+  const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+    LOCATION_TASK_NAME
+  );
+  if (hasStarted) return;
+  await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+    accuracy: Location.Accuracy.Balanced,
+    timeInterval: 10000,
+    distanceInterval: 100,
+    showsBackgroundLocationIndicator: true, // iOS only
+    foregroundService: {
+      notificationTitle: "위치 추적 중",
+      notificationBody: "앱이 백그라운드에서도 위치를 추적하고 있습니다.",
+    },
+  });
+};
 
 export async function getLastKnownPositionAsync() {
   try {

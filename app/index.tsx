@@ -6,17 +6,18 @@ import { hasLocationPermissions } from "@/services/locationService";
 import * as SplashScreen from "expo-splash-screen";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Loading } from "@/components/loading";
-
+import { storage } from "@/utils/storage";
+import { supabase } from "@/services/supabase/supabaseService";
 export default function index() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const { setSession, setUser } = useAuthStore();
   useEffect(() => {
     const init = async () => {
       // 앱 초기화 로직 (예: 온보딩 확인)
       try {
-        const hasOnboarded = await AsyncStorage.getItem("onboardingSeen");
-        await useAuthStore.getState().initAuth();
-        const { session, user } = useAuthStore.getState();
+        const hasOnboarded = await storage.getBoolean("onboardingSeen");
+        const { session } = (await supabase.auth.getSession()).data;
         const { isForgroundPermission, isBackgroundPermission } =
           await hasLocationPermissions();
 
@@ -24,9 +25,11 @@ export default function index() {
           router.replace("/permission");
         } else if (!hasOnboarded) {
           router.replace("/onboarding");
-        } else if (!session || !user) {
+        } else if (!session || !session.user) {
           router.replace("/auth/signin");
         } else {
+          setSession(session);
+          setUser(session.user);
           router.replace("/maps");
         }
       } catch (e) {

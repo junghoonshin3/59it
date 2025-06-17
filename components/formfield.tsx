@@ -11,9 +11,9 @@ import { Pressable } from "react-native-gesture-handler";
 type FormFieldProps = {
   className: string;
   label: string;
-  placeholder: string;
+  placeholder?: string;
   icon?: any; // require(...) 이미지
-  error: string;
+  error?: string;
   readOnly?: boolean;
   value: string;
   keyboardTypeOption?: KeyboardTypeOptions;

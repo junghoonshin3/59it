@@ -29,7 +29,6 @@ export default function Onboarding() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <StatusBar barStyle={"light-content"} />
       <PagerView
         style={styles.pagerView}
         initialPage={0}
