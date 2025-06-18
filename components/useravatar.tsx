@@ -7,7 +7,7 @@ export type UserAvatarProps = {
   className: string;
 };
 
-export const UserAvatar = ({
+export const useravatar = ({
   imageUrl,
   onPress,
   className,
