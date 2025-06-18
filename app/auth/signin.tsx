@@ -10,10 +10,12 @@ import LoginButton from "@/components/loginbutton";
 import Topbar from "@/components/topbar";
 import { useAuthStore } from "@/store/useAuthStore";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { supabase } from "@/services/supabase/supabaseService";
 
 export default function SignIn() {
   const router = useRouter();
-  const { initAuth } = useAuthStore();
+  const { setUser, setSession } = useAuthStore();
+
   const handleLogin = async (provider: "google" | "kakao") => {
     try {
       const user =
@@ -21,7 +23,12 @@ export default function SignIn() {
           ? await signInWithGoogle()
           : await signInWithKakao();
       if (user) {
-        await initAuth();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) throw Error("세션정보가 없음");
+        setSession(session);
+        setUser(session.user);
         router.replace("/maps");
       }
     } catch (error: any) {

@@ -72,18 +72,17 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
   const sharingGroup = await storage.getObject<SharingGroup>(
     "selectedSharingGroup"
   );
-
-  if (!sharingGroup || !data) return;
   console.log("data >> ", JSON.stringify(data));
+  if (!sharingGroup || !data) return;
   const lastIndex = data.locations.length - 1;
   console.log("length>>>", lastIndex);
-  await insertOrUpdateLocation({
-    user_id: sharingGroup.user_id,
-    group_id: sharingGroup.group_id,
-    latitude: data.locations[lastIndex].coords.latitude,
-    longitude: data.locations[lastIndex].coords.longitude,
-    updated_at: new Date().toDateString(),
-  });
+  // await insertOrUpdateLocation({
+  //   user_id: sharingGroup.user_id,
+  //   group_id: sharingGroup.group_id,
+  //   latitude: data.locations[lastIndex].coords.latitude,
+  //   longitude: data.locations[lastIndex].coords.longitude,
+  //   updated_at: new Date().toDateString(),
+  // });
 });
 
 export default function RootLayout() {

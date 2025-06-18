@@ -6,7 +6,7 @@ import {
   getGroupMembers,
   leaveGroup,
 } from "@/services/supabase/supabaseService";
-import { UserProfile } from "@/types/types";
+import { GroupMember, UserProfile } from "@/types/types";
 import { FlatList } from "react-native-gesture-handler";
 import { UserAvatar } from "@/components/UserAvatar";
 import Topbar from "@/components/topbar";
@@ -20,31 +20,32 @@ export default function Memebers() {
     hostId: string;
     inviteCode: string;
   }>();
-  const [members, setMembers] = useState<UserProfile[]>([]);
+  const [members, setMembers] = useState<GroupMember[] | null>(null);
   const { user } = useAuthStore();
   const router = useRouter();
   const [isDeleteGroup, setIsDeleteGroup] = useState<boolean>(false);
   useEffect(() => {
     const getMemebers = async () => {
-      let members = await getGroupMembers(groupId);
+      if (!user) return;
+      let members = await getGroupMembers(groupId, user?.id);
       console.log("members : ", members);
       setMembers(members);
     };
     getMemebers();
   }, []);
 
-  const renderItem = useCallback(({ item }: { item: UserProfile }) => {
+  const renderItem = useCallback(({ item }: { item: GroupMember }) => {
     const isHost = hostId === user?.id;
-    const isSelf = item.id === user?.id;
+    const isSelf = item.member.id === user?.id;
 
     return (
       <View className="flex-row pt-[10px] pb-[10px] justify-center items-center">
         <View>
           <UserAvatar
             className="w-[68px] h-[68px] rounded-full items-center justify-center bg-background"
-            imageUrl={item.profile_image}
+            imageUrl={item.member.profile_image}
           />
-          {hostId === item.id ? (
+          {hostId === item.member.id ? (
             <Image
               tintColor={"#FFD700"}
               className="absolute top-0 left-0"
@@ -53,7 +54,7 @@ export default function Memebers() {
           ) : null}
         </View>
         <View className="flex-1 justify-center px-[10px]">
-          <Text className="text-white">{item.nickname}</Text>
+          <Text className="text-white">{item.member.nickname}</Text>
         </View>
         {isHost && !isSelf ? (
           <ConfirmButton

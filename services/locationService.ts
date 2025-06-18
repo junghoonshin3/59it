@@ -5,6 +5,11 @@ import {
   unregisterTaskAsync,
 } from "expo-task-manager";
 
+const option: Location.LocationOptions = {
+  accuracy: Location.Accuracy.High,
+  timeInterval: 1000 * 30, // 30초마다
+  distanceInterval: 100, // 100m 이동마다
+};
 /**
  * Requests foreground and background location permissions.
  * @returns Permission statuses for foreground and background.
@@ -43,41 +48,50 @@ export async function requestLocationPermissionsAsync() {
 export async function stopLocationUpdatesAsync() {
   try {
     await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
-    await unregisterAllTasksAsync();
     console.log("Background location updates stopped.");
   } catch (e) {
     console.log("stopLocationUpdatesAsync >>>>>>>>>>>>>>>>>>>>>>> ", e);
   }
 }
 
-export const startForegroundTracking = async () => {
-  await Location.watchPositionAsync(
+export const startForegroundTracking = async (
+  callBack: Location.LocationCallback
+) => {
+  return await Location.watchPositionAsync(
     {
       accuracy: Location.Accuracy.High,
-      timeInterval: 5000, // 5초마다
-      distanceInterval: 50, // 10m 이동마다
+      timeInterval: 1000 * 30, // 30초마다
+      distanceInterval: 100, // 100m 이동마다
     },
-    (location) => {
-      console.log("포그라운드 위치:", location.coords);
-    }
+    callBack
   );
 };
 
 export const startBackgroundTracking = async () => {
-  const hasStarted = await Location.hasStartedLocationUpdatesAsync(
-    LOCATION_TASK_NAME
-  );
-  if (hasStarted) return;
-  await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-    accuracy: Location.Accuracy.Balanced,
-    timeInterval: 10000,
-    distanceInterval: 100,
-    showsBackgroundLocationIndicator: true, // iOS only
-    foregroundService: {
-      notificationTitle: "위치 추적 중",
-      notificationBody: "앱이 백그라운드에서도 위치를 추적하고 있습니다.",
-    },
-  });
+  try {
+    const hasStarted = await Location.hasStartedLocationUpdatesAsync(
+      LOCATION_TASK_NAME
+    );
+    console.log("hasStarted >>> ", hasStarted);
+    if (hasStarted) {
+      console.log("Already Background Location Start");
+      return;
+    }
+    await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+      accuracy: Location.Accuracy.High,
+      deferredUpdatesInterval: 1000,
+      deferredUpdatesDistance: 100,
+      // timeInterval: 1000,
+      distanceInterval: 100,
+      showsBackgroundLocationIndicator: true, // iOS only
+      foregroundService: {
+        notificationTitle: "위치 추적 중",
+        notificationBody: "앱이 백그라운드에서도 위치를 추적하고 있습니다.",
+      },
+    });
+  } catch (error) {
+    console.error("startBackgroundTracking:", error);
+  }
 };
 
 export async function getLastKnownPositionAsync() {

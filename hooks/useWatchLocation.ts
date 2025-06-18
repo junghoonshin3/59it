@@ -1,11 +1,7 @@
 import { useEffect } from "react";
 import * as Location from "expo-location";
 
-type WatchLocationProps = {
-  onLocationChange: (coords: { latitude: number; longitude: number }) => void;
-};
-
-export const useWatchLocation = ({ onLocationChange }: WatchLocationProps) => {
+export const useWatchLocation = (callBack: Location.LocationCallback) => {
   useEffect(() => {
     let subscriber: Location.LocationSubscription;
 
@@ -16,13 +12,11 @@ export const useWatchLocation = ({ onLocationChange }: WatchLocationProps) => {
       subscriber = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
+          mayShowUserSettingsDialog: true,
           timeInterval: 5000,
           distanceInterval: 100,
         },
-        (location) => {
-          const { latitude, longitude } = location.coords;
-          onLocationChange({ latitude, longitude });
-        }
+        callBack
       );
     };
 

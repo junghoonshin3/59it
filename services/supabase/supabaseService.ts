@@ -156,7 +156,6 @@ export const getGroupMembers = async (
     console.error("그룹 멤버 조회 실패:", error);
     return [];
   }
-  console.log("data >>> ", JSON.stringify(data));
   return data as unknown as GroupMember[];
 };
 

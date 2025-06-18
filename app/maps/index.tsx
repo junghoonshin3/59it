@@ -13,6 +13,7 @@ import { StatusBar } from "expo-status-bar";
 import {
   getCurrentPositionAsync,
   startBackgroundTracking,
+  startForegroundTracking,
   stopLocationUpdatesAsync,
 } from "@/services/locationService";
 import {
@@ -70,10 +71,12 @@ export default function Map() {
   useSyncCameraWithLocation(mapRef);
 
   // 포그라운드 시 위치변경 훅
-  useWatchLocation({
-    onLocationChange: (location) => {
-      setLocation(location);
-    },
+  useWatchLocation((location) => {
+    console.log(
+      "포그라운드에서 위치변경이 되는데.. >>>>>>>>>>> ",
+      location.coords
+    );
+    setLocation(location.coords);
   });
 
   // 🔁 그룹 정보 불러오기
@@ -87,6 +90,7 @@ export default function Map() {
       fetchGroups();
     }, [])
   );
+
   // 📍 현재 위치로 카메라 이동
   const getCurrentLocation = async () => {
     const currentPosition = await getCurrentPositionAsync();

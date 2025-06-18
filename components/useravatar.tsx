@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, Pressable, TouchableOpacity } from "react-native";
+import { View, Image, TouchableOpacity } from "react-native";
 
 export type UserAvatarProps = {
   imageUrl?: string;

@@ -87,6 +87,7 @@ export default function GroupDetailContent({
       <MapView
         ref={mapRef}
         style={{ aspectRatio: 1 }}
+        liteMode={true}
         initialRegion={{
           latitude: selectedGroup.group.latitude,
           longitude: selectedGroup.group.longitude,
