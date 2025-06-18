@@ -15,7 +15,6 @@ import { CustomMarkerView } from "@/components/CustomMarkerView";
 import PlaceField from "@/components/PlaceField";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Group, GroupMember } from "@/types/types";
-import { GroupResponse } from "@/types/types";
 import ConfirmButton from "./confirmbutton";
 import { useAuthStore } from "@/store/useAuthStore";
 
