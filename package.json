@@ -54,7 +54,7 @@
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
     "react-native-big-calendar": "^5.0.0-beta.5",
-    "react-native-calendars": "^1.1312.0",
+    "react-native-calendars": "^1.1312.1",
     "react-native-date-picker": "^5.0.12",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-get-random-values": "^1.11.0",

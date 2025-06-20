@@ -72,10 +72,11 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
   const sharingGroup = await storage.getObject<SharingGroup>(
     "selectedSharingGroup"
   );
-  console.log("data >> ", JSON.stringify(data));
-  if (!sharingGroup || !data) return;
+  console.log("백그라운드 위치 정보 >>> ", JSON.stringify(data));
   const lastIndex = data.locations.length - 1;
-  console.log("length>>>", lastIndex);
+  console.log("데이터 크기 >>>", lastIndex);
+  if (!sharingGroup || !data) return;
+
   // await insertOrUpdateLocation({
   //   user_id: sharingGroup.user_id,
   //   group_id: sharingGroup.group_id,
@@ -98,6 +99,7 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
+            statusBarStyle: "light",
             contentStyle: {
               paddingTop: insets.top,
               paddingBottom: insets.bottom,
@@ -108,6 +110,7 @@ export default function RootLayout() {
           <Stack.Screen
             name="maps/index"
             options={{
+              statusBarStyle: "dark",
               contentStyle: {
                 paddingBottom: insets.bottom,
                 backgroundColor: "#181A20",
@@ -116,7 +119,7 @@ export default function RootLayout() {
           />
         </Stack>
       </BottomSheetModalProvider>
-      <StatusBar style="light" />
+      {/* <StatusBar style="light" /> */}
     </GestureHandlerRootView>
   );
 }

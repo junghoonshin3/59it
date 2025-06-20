@@ -46,3 +46,14 @@ export async function signInWithGoogle() {
     throw err;
   }
 }
+
+export const logOut = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error("Logout error:", error.message);
+    return false;
+  } else {
+    console.log("Successfully signed out");
+    return true;
+  }
+};

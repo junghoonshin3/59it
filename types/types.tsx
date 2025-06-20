@@ -76,6 +76,7 @@ type Location = {
 };
 
 export type Place = {
+  place_id: string;
   formattedAddress: string;
   location: Location;
   displayName: DisplayName;

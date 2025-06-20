@@ -35,7 +35,7 @@ export default function SearchBar({
           borderColor: borderColor,
         }}
       >
-        <TextInput
+        <BottomSheetTextInput
           className="ms-[20px] me-[10px] text-white flex-1"
           placeholder={placeholder}
           value={value}

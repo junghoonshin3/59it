@@ -8,7 +8,6 @@ import Slide from "@/components/slide";
 import DotIndicator from "@/components/dotindicaotr";
 import { storage } from "@/utils/storage";
 import { useAuthStore } from "@/store/useAuthStore";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Onboarding() {
   const session = useAuthStore((state) => state.session);
@@ -28,7 +27,7 @@ export default function Onboarding() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <View className="flex-1 bg-background">
       <PagerView
         style={styles.pagerView}
         initialPage={0}
@@ -63,7 +62,7 @@ export default function Onboarding() {
       >
         <Text className="text-white text-base font-semibold">시작하기</Text>
       </Pressable>
-    </SafeAreaView>
+    </View>
   );
 }
 const styles = StyleSheet.create({

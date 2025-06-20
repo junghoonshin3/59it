@@ -1,16 +1,26 @@
 import React from "react";
-import { View, Text } from "react-native";
+import {
+  View,
+  Text,
+  ImageSourcePropType,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 
 type PlaceFieldProps = {
   label: string;
   value: string;
   className?: string;
+  icon?: ImageSourcePropType;
+  onShareCode?: () => void;
 };
 
 export default function PlaceField({
   label,
   value,
   className = "",
+  icon,
+  onShareCode,
 }: PlaceFieldProps) {
   return (
     <View className={className}>
@@ -26,6 +36,14 @@ export default function PlaceField({
         }}
       >
         <Text className="text-white text-[16px]">{value}</Text>
+        {icon ? (
+          <TouchableOpacity
+            style={{ position: "absolute", right: 20 }}
+            onPress={onShareCode}
+          >
+            <Image source={icon} />
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );

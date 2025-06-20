@@ -68,7 +68,7 @@ export default function Permission() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background ps-[32px] pe-[32px]">
+    <View className="flex-1 bg-background ps-[32px] pe-[32px]">
       <Text className="text-[24px] leading-[30px] font-medium tracking-[-0.5px] text-white mt-[30px]">{`59it 사용을 위해\n앱 권한을 허용해주세요`}</Text>
       <View className=" mt-[30px] bg-[#1F222A] rounded-[16px] pt-[20px] ps-[20px] pe-[20px] pb-[20px]">
         <Text className="text-[14px] leading-[22px] font-medium tracking-[-0.5px] text-white mb-[15px]">
@@ -110,6 +110,6 @@ export default function Permission() {
         onConfirm={modalContent.onConfirm}
         onCancel={() => setModalVisible(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 }

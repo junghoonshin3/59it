@@ -7,7 +7,7 @@ type PlaceItemProps = {
   place: Place;
 };
 
-export default function PlaceItem({ onPress, place }: PlaceItemProps) {
+function PlaceItemComponent({ onPress, place }: PlaceItemProps) {
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -18,3 +18,10 @@ export default function PlaceItem({ onPress, place }: PlaceItemProps) {
     </TouchableOpacity>
   );
 }
+
+// 메모이제이션 적용
+export default React.memo(
+  PlaceItemComponent,
+  (prevProps, nextProps) =>
+    prevProps.place.place_id === nextProps.place.place_id // 필요 시 더 정밀 비교 가능
+);

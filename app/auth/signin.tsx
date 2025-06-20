@@ -9,7 +9,6 @@ import {
 import LoginButton from "@/components/loginbutton";
 import Topbar from "@/components/topbar";
 import { useAuthStore } from "@/store/useAuthStore";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/services/supabase/supabaseService";
 
 export default function SignIn() {
@@ -40,7 +39,7 @@ export default function SignIn() {
   };
 
   return (
-    <SafeAreaView className="w-full h-full bg-background px-[32px] items-center">
+    <View className="w-full h-full bg-background px-[32px] items-center">
       <Topbar title="로그인" />
       <Image
         source={require("@/assets/images/logo.png")}
@@ -65,6 +64,6 @@ export default function SignIn() {
         description="구글 로그인"
         image={require("@/assets/images/google_login.png")}
       />
-    </SafeAreaView>
+    </View>
   );
 }

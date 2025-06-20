@@ -1,6 +1,5 @@
-import { Text, Image } from "react-native";
+import { Text, Image, View } from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type SlideProps = {
   title: string;
@@ -10,7 +9,7 @@ type SlideProps = {
 
 export default function Slide({ title, description, image }: SlideProps) {
   return (
-    <SafeAreaView className="w-full h-full justify-center items-center">
+    <View className="w-full h-full justify-center items-center">
       {image && (
         <Image source={image} className="w-60 h-60 mb-6" resizeMode="contain" />
       )}
@@ -20,6 +19,6 @@ export default function Slide({ title, description, image }: SlideProps) {
       <Text className="mt-[36px] text-[14px] leading-[22px] font-semibold text-center text-white tracking-[-0.8px]">
         {description}
       </Text>
-    </SafeAreaView>
+    </View>
   );
 }

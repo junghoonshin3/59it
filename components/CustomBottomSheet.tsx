@@ -1,18 +1,16 @@
 import React, { forwardRef } from "react";
 import { StyleSheet } from "react-native";
 import BottomSheet, {
-  BottomSheetView,
   BottomSheetProps,
-  BottomSheetModal,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 
 type CustomBottomSheetProps = BottomSheetProps & {
   children: React.ReactNode;
-  contentContainerClassName?: string;
 };
 
 const CustomBottomSheet = forwardRef<BottomSheet, CustomBottomSheetProps>(
-  ({ children, contentContainerClassName, ...props }, ref) => {
+  ({ children, ...props }, ref) => {
     return (
       <BottomSheet
         ref={ref}

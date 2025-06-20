@@ -40,7 +40,6 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION"
       ],
-      "foregroundServiceType": ["location"],
       "edgeToEdgeEnabled": true,
       "softwareKeyboardLayoutMode": "pan"
     },

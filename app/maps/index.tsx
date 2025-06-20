@@ -7,13 +7,11 @@ import React, {
 } from "react";
 import { View } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Region } from "react-native-maps";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
 import {
   getCurrentPositionAsync,
   startBackgroundTracking,
-  startForegroundTracking,
   stopLocationUpdatesAsync,
 } from "@/services/locationService";
 import {
@@ -25,10 +23,7 @@ import {
 import { useAuthStore } from "@/store/useAuthStore";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useSyncCameraWithLocation } from "@/hooks/useSyncCameraWithLocation";
-
 import { Group, GroupMember, SharingGroup } from "@/types/types";
-
-import { Loading } from "@/components/loading";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import GroupListContent from "@/components/GroupListContent";
 import GroupDetailContent from "@/components/GroupDetailContent";
@@ -41,20 +36,15 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { StyleProps } from "react-native-reanimated";
 import { storage } from "@/utils/storage";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
-import GroupListWithDetailBottomSheet from "@/components/GroupListContent";
-import {
-  unregisterAllTasksAsync,
-  unregisterTaskAsync,
-} from "expo-task-manager";
-import { LOCATION_TASK_NAME } from "@/constants/taskName";
+import ProfileButton from "@/components/ProfileButton";
 
 export default function Map() {
-  // 🔧 refs
+  // refs
   const mapRef = useRef<MapView>(null);
   const groupRef = useRef<BottomSheet>(null);
   const createRef = useRef<BottomSheet>(null);
 
-  // 🧠 states
+  // states
 
   const [myGroups, setMyGroups] = useState<Group[] | null>();
   const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
@@ -62,12 +52,12 @@ export default function Map() {
   const [isModalShareLoc, setIsModalShareLoc] = useState(false);
   const [showBackgroundButton, setShowBackgroundButton] = useState(true);
 
-  // 📌 stores
+  // stores
   const { user } = useAuthStore();
   const { location, setLocation } = useLocationStore();
   const insets = useSafeAreaInsets();
 
-  // 🗺️ 위치 변경시 카메라 위치 설정
+  // 위치 변경시 카메라 위치 설정
   useSyncCameraWithLocation(mapRef);
 
   // 포그라운드 시 위치변경 훅
@@ -79,7 +69,7 @@ export default function Map() {
     setLocation(location.coords);
   });
 
-  // 🔁 그룹 정보 불러오기
+  // 그룹 정보 불러오기
   useFocusEffect(
     useCallback(() => {
       const fetchGroups = async () => {
@@ -179,7 +169,7 @@ export default function Map() {
     );
   };
 
-  if (!location) return <Loading />;
+  if (!location) return;
 
   return (
     <View className="flex-1">
@@ -249,7 +239,10 @@ export default function Map() {
         <GroupListContent
           groups={myGroups ?? []}
           onClickGroupItem={onGroupClick}
-          addGroup={() => {}}
+          addGroup={() => {
+            groupRef.current?.close();
+            createRef.current?.expand();
+          }}
           selectedGroupId={selectedGroup?.group.id}
         />
 
@@ -281,7 +274,15 @@ export default function Map() {
         hasNotification
         onPress={() => {}}
       />
-      <StatusBar style="dark" />
+      <ProfileButton
+        profileImage={user?.user_metadata.picture}
+        top={insets.top + 5}
+        className="left-4"
+        onPress={() => {
+          router.navigate("/profile");
+        }}
+      />
+      {/* <StatusBar style="dark" /> */}
     </View>
   );
 }
