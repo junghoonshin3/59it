@@ -3,7 +3,7 @@ import { View, Image, TouchableOpacity } from "react-native";
 import clsx from "clsx";
 
 type Props = {
-  profileImage: string; // 로컬 이미지일 경우 require 사용, 원격일 경우 URL
+  profileImage?: string; // 로컬 이미지일 경우 require 사용, 원격일 경우 URL
   size?: number;
   top?: number;
   className?: string;
@@ -31,9 +31,9 @@ export default function ProfileButton({
     >
       <Image
         source={
-          typeof profileImage === "string"
+          profileImage
             ? { uri: profileImage }
-            : profileImage
+            : require("@/assets/images/user_icon.png")
         }
         style={{ width: "100%", height: "100%" }}
         resizeMode="cover"

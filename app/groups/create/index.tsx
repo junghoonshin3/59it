@@ -6,36 +6,55 @@ import FormField from "@/components/formfield";
 import { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   FlatList,
+  ScrollView,
   TouchableWithoutFeedback,
 } from "react-native-gesture-handler";
 import PlaceItem from "@/components/PlaceItem";
 import SearchBar from "@/components/SearchBar";
 import ConfirmButton from "@/components/confirmbutton";
-import { CalendarList, DateData } from "react-native-calendars";
+import { CalendarList } from "react-native-calendars";
 import DatePicker from "react-native-date-picker";
 import dayjs from "dayjs";
 import "dayjs/locale/ko";
-import { useAuthStore } from "@/store/useAuthStore";
-import { createGroup } from "@/services/supabase/supabaseService";
-import { GroupRequest, Place } from "@/types/types";
+import { Place } from "@/types/types";
 import { fetchPlaceSuggestions } from "@/api/googlePlaces";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
+import { GroupRequest } from "@/api/groups/types";
+import { useUserProfile } from "@/api/auth/hooks/useAuth";
+import { useCreateGroupStore } from "@/store/groups/useGroupStore";
+import { useCreateMyGroup } from "@/api/groups/hooks/useGroups";
+import { pickImage } from "@/utils/pickImage";
+import { ImagePickerAsset } from "expo-image-picker";
 
 export default function CreateGroup() {
   const router = useRouter();
-  const { user } = useAuthStore();
-  const [groupNm, setGroupNm] = useState("");
-  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const placeRef = useRef<BottomSheetMethods>(null);
   const calendarRef = useRef<BottomSheetMethods>(null);
   const timeRef = useRef<BottomSheetMethods>(null);
-  const now = dayjs().toDate();
-  const [selectedDateTime, setSelectedDateTime] = useState(dayjs()); // 날짜+시간 통합
   const [searchText, setSearchText] = useState<string>("");
   const [searchPlaces, setSearchPlaces] = useState<Place[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const { data: user } = useUserProfile();
+  const creatMyGroupMutation = useCreateMyGroup();
+  const {
+    groupNm,
+    selectedPlace,
+    selectedDateTime,
+    setGroupNm,
+    setSelectedPlace,
+    setSelectedDate,
+    setSelectedTime,
+    clearAll,
+  } = useCreateGroupStore();
+  const [imageAsset, setImageAsset] = useState<ImagePickerAsset | undefined>();
+
+  const handlePickedImage = async () => {
+    const image = await pickImage();
+    if (!image || !image?.base64 || !image?.fileName) return;
+    setImageAsset(image);
+  };
 
   const handleSearch = () => {
     placeRef.current?.expand();
@@ -78,6 +97,11 @@ export default function CreateGroup() {
     Keyboard.dismiss();
   };
 
+  // validation 로직 추가
+  const isValid = useMemo(() => {
+    return groupNm.trim() !== "" && selectedPlace !== null;
+  }, [groupNm, selectedPlace]);
+
   const onEndReached = async () => {
     if (!nextPageToken || isLoadingMore) return;
     setIsLoadingMore(true);
@@ -90,35 +114,35 @@ export default function CreateGroup() {
 
   const handleSelectTime = (date: Date) => {
     const time = dayjs(date);
-    setSelectedDateTime((prev) =>
-      prev.set("hour", time.hour()).set("minute", time.minute())
-    );
+    setSelectedTime(time);
   };
+
   const handleCreateGroup = async () => {
-    const req: GroupRequest = {
-      host_id: user?.id ?? "",
+    if (!isValid) return;
+    const groupReq: GroupRequest = {
       name: groupNm,
+      host_id: user?.id ?? "",
+      display_name: selectedPlace?.displayName.text ?? "",
       address: selectedPlace?.formattedAddress ?? "",
-      display_name: selectedPlace?.displayName?.text ?? "",
-      latitude: selectedPlace?.location.latitude ?? 0,
       longitude: selectedPlace?.location.longitude ?? 0,
+      latitude: selectedPlace?.location.latitude ?? 0,
       meeting_date: selectedDateTime.format("YYYY-MM-DD"),
-      meeting_time: selectedDateTime.format("HH:mm:00"),
+      meeting_time: selectedDateTime.format("hh:mm:ss"),
+      image_base64: imageAsset?.base64 ?? undefined,
+      image_filename: imageAsset?.fileName ?? undefined,
     };
 
-    const data = await createGroup(req);
+    const group = await creatMyGroupMutation.mutateAsync(groupReq);
 
-    if (data) {
-      router.push(
-        `/groups/create/code?invite_code=${data.invite_code}&group_id=${data.id}`
-      );
-    }
+    router.dismissTo({
+      pathname: "/groups/create/code",
+      params: {
+        inviteCode: group.invite_code,
+        groupName: group.name,
+      },
+    });
+    clearAll();
   };
-
-  const isValid =
-    groupNm.trim() !== "" &&
-    selectedPlace !== null &&
-    selectedDateTime.isValid();
 
   return (
     <TouchableWithoutFeedback
@@ -131,58 +155,76 @@ export default function CreateGroup() {
           onPress={router.back}
           image={require("@/assets/images/back_button.png")}
         />
-        <FormField
-          className="mt-[20px]"
-          label="모임명"
-          placeholder="모임명을 입력하세요."
-          icon={require("@/assets/images/groups_create.png")}
-          readOnly={false}
-          error="모임명을 입력해주세요."
-          value={groupNm}
-          onChangeText={setGroupNm}
-        />
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <FormField
+            className="mt-[20px]"
+            label="모임명"
+            placeholder="모임명을 입력하세요."
+            icon={require("@/assets/images/groups_create.png")}
+            readOnly={false}
+            error="모임명을 입력해주세요."
+            value={groupNm}
+            onChangeText={setGroupNm}
+          />
 
-        <FormField
-          className="mt-[20px]"
-          label="모임장소"
-          placeholder="모임장소를 검색하세요."
-          icon={require("@/assets/images/search_places.png")}
-          readOnly={true}
-          error="모임장소를 선택해주세요."
-          value={`${selectedPlace?.displayName?.text ?? ""}`}
-          onPress={handleSearch}
-        />
+          <FormField
+            className="mt-[20px]"
+            label="모임장소"
+            placeholder="모임장소를 검색하세요."
+            icon={require("@/assets/images/search_places.png")}
+            readOnly={true}
+            error="모임장소를 선택해주세요."
+            value={`${selectedPlace?.displayName?.text ?? ""}`}
+            onPress={handleSearch}
+          />
 
-        <FormField
-          className="mt-[20px]"
-          label="모임날짜"
-          placeholder="모임날짜를 선택하세요."
-          icon={require("@/assets/images/month_calendar.png")}
-          readOnly={true}
-          error="모임날짜를 선택해주세요."
-          value={selectedDateTime.format("YYYY-MM-DD")}
-          onPress={handleCalendar}
-        />
+          <FormField
+            className="mt-[20px]"
+            label="모임날짜"
+            placeholder="모임날짜를 선택하세요."
+            icon={require("@/assets/images/month_calendar.png")}
+            readOnly={true}
+            error="모임날짜를 선택해주세요."
+            value={selectedDateTime.format("YYYY-MM-DD")}
+            onPress={handleCalendar}
+          />
 
-        <FormField
-          className="mt-[20px]"
-          label="모임시간"
-          placeholder="모임시간을 선택하세요."
-          icon={require("@/assets/images/access_time.png")}
-          readOnly={true}
-          error="모임시간을 선택해주세요."
-          value={selectedDateTime.format("A hh:mm")}
-          onPress={handleTime}
-        />
+          <FormField
+            className="mt-[20px]"
+            label="모임시간"
+            placeholder="모임시간을 선택하세요."
+            icon={require("@/assets/images/access_time.png")}
+            readOnly={true}
+            error="모임시간을 선택해주세요."
+            value={selectedDateTime.format("A hh:mm")}
+            onPress={handleTime}
+          />
 
-        <View className="flex-1" />
+          <FormField
+            className="mt-[20px]"
+            label="모임사진(선택)"
+            placeholder="모임을 대표하는 사진을 설정해보세요."
+            icon={require("@/assets/images/group_image.png")}
+            readOnly={true}
+            error=""
+            value={imageAsset?.fileName ?? ""}
+            onPress={handlePickedImage}
+          />
+        </ScrollView>
         <ConfirmButton
           className={`bg-[#0075FF] h-[60px] rounded-[16px] items-center justify-center mt-[10px] mb-[10px] ${
             !isValid ? "opacity-50" : ""
           }`}
           title="생성하기"
+          disabled={creatMyGroupMutation.isPending || !isValid}
+          loading={creatMyGroupMutation.isPending}
+          indicatorColor="#ffffff"
           onPress={handleCreateGroup}
-          disabled={!isValid}
         />
 
         <CustomBottomSheet
@@ -280,15 +322,8 @@ export default function CreateGroup() {
                 return (
                   <TouchableOpacity
                     onPress={() => {
-                      const [year, month, day] = date.dateString
-                        .split("-")
-                        .map(Number);
-                      setSelectedDateTime((prev) =>
-                        prev
-                          .set("year", year)
-                          .set("month", month - 1)
-                          .set("date", day)
-                      );
+                      const selectedDate = dayjs(date.dateString, "YYYY-MM-DD");
+                      setSelectedDate(selectedDate);
                     }}
                     activeOpacity={0.7}
                     style={{

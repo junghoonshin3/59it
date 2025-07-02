@@ -1,29 +1,17 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Region } from "react-native-maps";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   getCurrentPositionAsync,
   startBackgroundTracking,
   stopLocationUpdatesAsync,
 } from "@/services/locationService";
-import {
-  updateLocationSharingStatus,
-  getMyGroups,
-  getGroupMembers,
-} from "@/services/supabase/supabaseService";
-
-import { useAuthStore } from "@/store/useAuthStore";
+import { updateLocationSharingStatus } from "@/services/supabase/supabaseService";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useSyncCameraWithLocation } from "@/hooks/useSyncCameraWithLocation";
-import { Group, GroupMember, SharingGroup } from "@/types/types";
+import { SharingGroup } from "@/types/types";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import GroupListContent from "@/components/GroupListContent";
 import GroupDetailContent from "@/components/GroupDetailContent";
@@ -37,6 +25,10 @@ import { StyleProps } from "react-native-reanimated";
 import { storage } from "@/utils/storage";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
 import ProfileButton from "@/components/ProfileButton";
+import { useUser, useUserProfile } from "@/api/auth/hooks/useAuth";
+import { Group } from "@/api/groups/types";
+import { getMyGroups } from "@/api/groups/groups";
+import { useGroupMembers, useMyGroups } from "@/api/groups/hooks/useGroups";
 
 export default function Map() {
   // refs
@@ -45,15 +37,17 @@ export default function Map() {
   const createRef = useRef<BottomSheet>(null);
 
   // states
-
-  const [myGroups, setMyGroups] = useState<Group[] | null>();
-  const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
+  // const [myGroups, setMyGroups] = useState<Group[]>();
+  // const [groupMembers, setGroupMembers] = useState<GroupMember[] | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isModalShareLoc, setIsModalShareLoc] = useState(false);
   const [showBackgroundButton, setShowBackgroundButton] = useState(true);
 
   // stores
-  const { user } = useAuthStore();
+  const { data: user } = useUserProfile();
+  const { data: myGroups, isLoading } = useMyGroups(user?.id);
+  const { data: groupMemberProfiles, isLoading: isGroupMemberLoading } =
+    useGroupMembers(selectedGroup?.id);
   const { location, setLocation } = useLocationStore();
   const insets = useSafeAreaInsets();
 
@@ -62,24 +56,9 @@ export default function Map() {
 
   // 포그라운드 시 위치변경 훅
   useWatchLocation((location) => {
-    console.log(
-      "포그라운드에서 위치변경이 되는데.. >>>>>>>>>>> ",
-      location.coords
-    );
+    console.log("포그라운드에서 위치변경 >>>>>>>>>>> ", location.coords);
     setLocation(location.coords);
   });
-
-  // 그룹 정보 불러오기
-  useFocusEffect(
-    useCallback(() => {
-      const fetchGroups = async () => {
-        if (!user) return;
-        const groups = await getMyGroups(user.id);
-        setMyGroups(groups);
-      };
-      fetchGroups();
-    }, [])
-  );
 
   // 📍 현재 위치로 카메라 이동
   const getCurrentLocation = async () => {
@@ -96,9 +75,9 @@ export default function Map() {
 
   // 👥 그룹 클릭 시 상세 정보 로드
   const onGroupClick = async (selectedGroup: Group) => {
-    const members = await getGroupMembers(selectedGroup.group.id, user!!.id);
+    // const members = await getGroupMembers(selectedGroup.group.id, user!!.id);
     setSelectedGroup(selectedGroup);
-    setGroupMembers(members);
+    // setGroupMembers(members);
     groupRef.current?.snapToIndex(2);
   };
 
@@ -106,52 +85,52 @@ export default function Map() {
   const handleConfirmStartSharing = async () => {
     if (!selectedGroup || !user) return;
 
-    const { success, error } = await updateLocationSharingStatus(
-      selectedGroup.group.id,
-      user.id,
-      true
-    );
+    // const { success, error } = await updateLocationSharingStatus(
+    //   selectedGroup.group.id,
+    //   user.id,
+    //   true
+    // );
 
-    if (success) {
-      await startBackgroundTracking();
-      await storage.setObject<SharingGroup>("selectedSharingGroup", {
-        group_id: selectedGroup.group.id,
-        user_id: user.id,
-      });
-      setGroupMembers(
-        (prev) =>
-          prev?.map((m) =>
-            m.member.id === user.id ? { ...m, is_sharing_location: true } : m
-          ) ?? null
-      );
-    } else {
-      console.error("위치 공유 시작 실패:", error);
-    }
-    setIsModalShareLoc(false);
+    // if (success) {
+    // await startBackgroundTracking();
+    // await storage.setObject<SharingGroup>("selectedSharingGroup", {
+    //   group_id: selectedGroup.group.id,
+    //   user_id: user.id,
+    // });
+    // setGroupMembers(
+    //   (prev) =>
+    //     prev?.map((m) =>
+    //       m.member.id === user.id ? { ...m, is_sharing_location: true } : m
+    //     ) ?? null
+    // );
+    // } else {
+    //   console.error("위치 공유 시작 실패:", error);
+    // }
+    // setIsModalShareLoc(false);
   };
 
   // 📥 위치 공유 중지 요청
   const handlePressStopSharing = async () => {
     if (!selectedGroup || !user) return;
 
-    const { success, error } = await updateLocationSharingStatus(
-      selectedGroup.group.id,
-      user.id,
-      false
-    );
+    // const { success, error } = await updateLocationSharingStatus(
+    //   selectedGroup.group.id,
+    //   user.id,
+    //   false
+    // );
 
-    if (success) {
-      await stopLocationUpdatesAsync();
-      await storage.remove("selectedSharingGroup");
-      setGroupMembers(
-        (prev) =>
-          prev?.map((m) =>
-            m.member.id === user.id ? { ...m, is_sharing_location: false } : m
-          ) ?? null
-      );
-    } else {
-      console.error("위치 공유 중지 실패:", error);
-    }
+    // if (success) {
+    //   await stopLocationUpdatesAsync();
+    //   await storage.remove("selectedSharingGroup");
+    // setGroupMembers(
+    //   (prev) =>
+    //     prev?.map((m) =>
+    //       m.member.id === user.id ? { ...m, is_sharing_location: false } : m
+    //     ) ?? null
+    // );
+    // } else {
+    //   console.error("위치 공유 중지 실패:", error);
+    // }
   };
 
   type CustomBackgroundProps = StyleProps & {
@@ -194,8 +173,8 @@ export default function Map() {
       >
         <CustomMarkerView
           coordinate={location}
-          imageUrl={user?.user_metadata.picture}
-          name={user?.user_metadata.name}
+          imageUrl={user?.profile_image}
+          name={user?.nickname}
         />
       </MapView>
 
@@ -237,18 +216,19 @@ export default function Map() {
         )}
       >
         <GroupListContent
+          loading={isLoading}
           groups={myGroups ?? []}
           onClickGroupItem={onGroupClick}
           addGroup={() => {
             groupRef.current?.close();
             createRef.current?.expand();
           }}
-          selectedGroupId={selectedGroup?.group.id}
+          selectedGroupId={""}
         />
 
         <GroupDetailContent
           selectedGroup={selectedGroup}
-          members={groupMembers ?? []}
+          members={groupMemberProfiles ?? []}
           onShareLocationStart={() => setIsModalShareLoc(true)}
           onShareLocationStop={handlePressStopSharing}
         />
@@ -275,7 +255,7 @@ export default function Map() {
         onPress={() => {}}
       />
       <ProfileButton
-        profileImage={user?.user_metadata.picture}
+        profileImage={user?.profile_image}
         top={insets.top + 5}
         className="left-4"
         onPress={() => {

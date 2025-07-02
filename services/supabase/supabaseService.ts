@@ -1,13 +1,6 @@
 import { createClient, User } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  Group,
-  GroupMember,
-  GroupMemberWithLocation,
-  GroupRequest,
-  GroupResponse,
-  UserProfile,
-} from "@/types/types";
+import { GroupMember, GroupResponse } from "@/api/groups/types";
 
 export type Profile = {
   id: string;
@@ -75,57 +68,57 @@ export const registerProfile = async (user: User) => {
   return data;
 };
 
-export const createGroup = async (
-  req: GroupRequest
-): Promise<GroupResponse | null> => {
-  const { data, error } = await supabase.functions.invoke<GroupResponse>(
-    "create_invite_code",
-    {
-      body: req,
-    }
-  );
-  console.log("createGroup data", data?.invite_code);
-  if (error) {
-    console.error("그룹 생성 오류:", error.message);
-    return null;
-  }
+// export const createGroup = async (
+//   req: GroupRequest
+// ): Promise<GroupResponse | null> => {
+//   const { data, error } = await supabase.functions.invoke<GroupResponse>(
+//     "create_invite_code",
+//     {
+//       body: req,
+//     }
+//   );
+//   console.log("createGroup data", data?.invite_code);
+//   if (error) {
+//     console.error("그룹 생성 오류:", error.message);
+//     return null;
+//   }
 
-  return data;
-};
+//   return data;
+// };
 
-export const updateGroup = async (
-  group_id: string,
-  group_image_url: string
-): Promise<boolean> => {
-  const { error } = await supabase
-    .from("groups")
-    .update({ group_image_url: group_image_url })
-    .eq("id", group_id);
-  if (error) {
-    console.error("URL 업데이트 실패", error.message);
-    return false;
-  }
-  return true;
-};
+// export const updateGroup = async (
+//   group_id: string,
+//   group_image_url: string
+// ): Promise<boolean> => {
+//   const { error } = await supabase
+//     .from("groups")
+//     .update({ group_image_url: group_image_url })
+//     .eq("id", group_id);
+//   if (error) {
+//     console.error("URL 업데이트 실패", error.message);
+//     return false;
+//   }
+//   return true;
+// };
 
-export const getMyGroups = async (user_id: string): Promise<Group[] | null> => {
-  const { data, error } = await supabase
-    .from("group_members")
-    .select(
-      `
-      group:groups (
-        *)
-    `
-    )
-    .eq("user_id", user_id);
+// export const getMyGroups = async (user_id: string): Promise<Group[] | null> => {
+//   const { data, error } = await supabase
+//     .from("group_members")
+//     .select(
+//       `
+//       group:groups (
+//         *)
+//     `
+//     )
+//     .eq("user_id", user_id);
 
-  if (error) {
-    console.error("내가 참여한 그룹 가져오기 실패:", error);
-    return null;
-  }
-  if (!data) return [];
-  return data as unknown as Group[];
-};
+//   if (error) {
+//     console.error("내가 참여한 그룹 가져오기 실패:", error);
+//     return null;
+//   }
+//   if (!data) return [];
+//   return data as unknown as Group[];
+// };
 
 export const findGroupByInviteCode = async (
   inviteCode: string
@@ -144,51 +137,51 @@ export const findGroupByInviteCode = async (
   return data as GroupResponse;
 };
 
-export const getGroupMembers = async (
-  groupId: string,
-  userId: string
-): Promise<GroupMember[]> => {
-  const { data, error } = await supabase
-    .from("group_members")
-    .select("member:profiles(*), is_sharing_location") // profiles 테이블 조인
-    .eq("group_id", groupId);
-  if (error) {
-    console.error("그룹 멤버 조회 실패:", error);
-    return [];
-  }
-  return data as unknown as GroupMember[];
-};
+// export const getGroupMembers = async (
+//   groupId: string,
+//   userId: string
+// ): Promise<GroupMember[]> => {
+//   const { data, error } = await supabase
+//     .from("group_members")
+//     .select("member:profiles(*), is_sharing_location") // profiles 테이블 조인
+//     .eq("group_id", groupId);
+//   if (error) {
+//     console.error("그룹 멤버 조회 실패:", error);
+//     return [];
+//   }
+//   return data as unknown as GroupMember[];
+// };
 
-export const joinGroup = async (groupId: string, userId: string) => {
-  // 이미 참여했는지 확인
-  const { data: existing, error: checkError } = await supabase
-    .from("group_members")
-    .select("*")
-    .eq("group_id", groupId)
-    .eq("user_id", userId)
-    .maybeSingle();
+// export const joinGroup = async (groupId: string, userId: string) => {
+//   // 이미 참여했는지 확인
+//   const { data: existing, error: checkError } = await supabase
+//     .from("group_members")
+//     .select("*")
+//     .eq("group_id", groupId)
+//     .eq("user_id", userId)
+//     .maybeSingle();
 
-  if (checkError) {
-    console.error("참여 여부 확인 실패:", checkError);
-    return;
-  }
+//   if (checkError) {
+//     console.error("참여 여부 확인 실패:", checkError);
+//     return;
+//   }
 
-  if (existing) {
-    console.log("이미 그룹에 참여 중입니다.");
-    return;
-  }
+//   if (existing) {
+//     console.log("이미 그룹에 참여 중입니다.");
+//     return;
+//   }
 
-  // 참여 등록
-  const { error: insertError } = await supabase
-    .from("group_members")
-    .insert([{ group_id: groupId, user_id: userId }]);
+//   // 참여 등록
+//   const { error: insertError } = await supabase
+//     .from("group_members")
+//     .insert([{ group_id: groupId, user_id: userId }]);
 
-  if (insertError) {
-    console.error("그룹 참여 실패:", insertError);
-  } else {
-    console.log("그룹 참여 성공!");
-  }
-};
+//   if (insertError) {
+//     console.error("그룹 참여 실패:", insertError);
+//   } else {
+//     console.log("그룹 참여 성공!");
+//   }
+// };
 
 export const insertOrUpdateLocation = async ({
   user_id,

@@ -2,40 +2,41 @@
 import React from "react";
 import { View, Image, Alert, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
-import {
-  signInWithGoogle,
-  signInWithKakao,
-} from "@/services/supabase/authService";
+
 import LoginButton from "@/components/loginbutton";
 import Topbar from "@/components/topbar";
-import { useAuthStore } from "@/store/useAuthStore";
-import { supabase } from "@/services/supabase/supabaseService";
+import { useGoogleLogin, useKakaoLogin } from "@/api/auth/hooks/useAuth";
 
 export default function SignIn() {
   const router = useRouter();
-  const { setUser, setSession } = useAuthStore();
+  const googleLoginMutation = useGoogleLogin();
+  const kakaoLoginMutation = useKakaoLogin();
+  // 로딩 상태 확인
+  const isLoading =
+    googleLoginMutation.isPending || kakaoLoginMutation.isPending;
 
-  const handleLogin = async (provider: "google" | "kakao") => {
-    try {
-      const user =
-        provider === "google"
-          ? await signInWithGoogle()
-          : await signInWithKakao();
-      if (user) {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) throw Error("세션정보가 없음");
-        setSession(session);
-        setUser(session.user);
+  const handleGoogleLogin = (): void => {
+    if (isLoading) return; // 로딩 중일 때는 실행하지 않음
+    googleLoginMutation.mutate(undefined, {
+      onSuccess: () => {
+        // router.replace("/maps");
+      },
+      onError: (error: Error) => {
+        Alert.alert("오류", error.message || "구글 로그인에 실패했습니다.");
+      },
+    });
+  };
+
+  const handleKakaoLogin = (): void => {
+    if (isLoading) return; // 로딩 중일 때는 실행하지 않음
+    kakaoLoginMutation.mutate(undefined, {
+      onSuccess: () => {
         router.replace("/maps");
-      }
-    } catch (error: any) {
-      Alert.alert(
-        "로그인 실패",
-        error?.message || "로그인 중 오류가 발생했습니다."
-      );
-    }
+      },
+      onError: (error: Error) => {
+        Alert.alert("오류", error.message || "카카오 로그인에 실패했습니다.");
+      },
+    });
   };
 
   return (
@@ -49,19 +50,23 @@ export default function SignIn() {
 
       <LoginButton
         title="카카오 로그인"
-        onPress={() => handleLogin("kakao")}
+        onPress={handleKakaoLogin}
         backgroundColor="#FEE500"
         textColor="#000000"
         description="카카오 로그인"
+        disabled={isLoading}
+        loading={kakaoLoginMutation.isPending}
         image={require("@/assets/images/kakao_login.png")}
       />
 
       <LoginButton
         title="구글 로그인"
-        onPress={() => handleLogin("google")}
+        onPress={handleGoogleLogin}
         backgroundColor="#ffffff"
-        textColor="#000000"
+        textColor="#181A20"
         description="구글 로그인"
+        disabled={isLoading}
+        loading={googleLoginMutation.isPending}
         image={require("@/assets/images/google_login.png")}
       />
     </View>

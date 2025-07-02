@@ -27,6 +27,7 @@
     "@rneui/themed": "^4.0.0-rc.8",
     "@shopify/flash-list": "1.7.3",
     "@supabase/supabase-js": "^2.49.4",
+    "@tanstack/react-query": "^5.81.5",
     "axios": "^1.9.0",
     "base64-arraybuffer": "^1.0.2",
     "clsx": "^2.1.1",

@@ -7,12 +7,11 @@ import { LocaleConfig } from "react-native-calendars";
 import dayjs from "dayjs";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { StatusBar } from "expo-status-bar";
 import { LOCATION_TASK_NAME } from "@/constants/taskName";
 import * as TaskManager from "expo-task-manager";
-import { insertOrUpdateLocation } from "@/services/supabase/supabaseService";
 import { storage } from "@/utils/storage";
 import { SharingGroup } from "@/types/types";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 SplashScreen.preventAutoHideAsync();
 
 LocaleConfig.locales["ko"] = {
@@ -86,40 +85,44 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
   // });
 });
 
+const queryClient = new QueryClient();
+
 export default function RootLayout() {
   const insets = useSafeAreaInsets();
   return (
-    <GestureHandlerRootView
-      style={{
-        flex: 1,
-        backgroundColor: "#181A20",
-      }}
-    >
-      <BottomSheetModalProvider>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            statusBarStyle: "light",
-            contentStyle: {
-              paddingTop: insets.top,
-              paddingBottom: insets.bottom,
-              backgroundColor: "#181A20",
-            },
-          }}
-        >
-          <Stack.Screen
-            name="maps/index"
-            options={{
-              statusBarStyle: "dark",
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView
+        style={{
+          flex: 1,
+          backgroundColor: "#181A20",
+        }}
+      >
+        <BottomSheetModalProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              statusBarStyle: "light",
               contentStyle: {
+                paddingTop: insets.top,
                 paddingBottom: insets.bottom,
                 backgroundColor: "#181A20",
               },
             }}
-          />
-        </Stack>
-      </BottomSheetModalProvider>
-      {/* <StatusBar style="light" /> */}
-    </GestureHandlerRootView>
+          >
+            <Stack.Screen
+              name="maps/index"
+              options={{
+                statusBarStyle: "dark",
+                contentStyle: {
+                  paddingBottom: insets.bottom,
+                  backgroundColor: "#181A20",
+                },
+              }}
+            />
+          </Stack>
+        </BottomSheetModalProvider>
+        {/* <StatusBar style="light" /> */}
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }
