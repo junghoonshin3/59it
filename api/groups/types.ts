@@ -54,3 +54,12 @@ export interface GroupMember {
   role: string;
   create_at: string;
 }
+
+export interface GroupMemberLocationRequest {
+  group_id: string;
+  user_id: string;
+  latitude?: number;
+  longitude?: number;
+  updated_at?: string;
+  is_sharing: boolean;
+}

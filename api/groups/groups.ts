@@ -1,7 +1,14 @@
 import { supabase } from "@/services/supabase/supabaseService";
-import { Group, GroupMember, GroupRequest, GroupResponse } from "./types";
+import {
+  Group,
+  GroupMember,
+  GroupMemberLocationRequest,
+  GroupRequest,
+  GroupResponse,
+} from "./types";
 import { decode } from "base64-arraybuffer";
 import { UserProfile } from "../auth/types";
+import { Location } from "@/store/useLocationStore";
 
 export const getMyGroups = async (user_id: string): Promise<Group[]> => {
   const { data, error } = await supabase
@@ -133,4 +140,34 @@ export const getGroupMembers = async (
     throw error;
   }
   return data?.map((m: any) => m.profiles) || [];
+};
+
+export const upsertGroupMemberLocation = async (
+  locationReq: GroupMemberLocationRequest
+) => {
+  const { data, error } = await supabase
+    .from("group_member_locations")
+    .upsert(locationReq, {
+      onConflict: "group_id,user_id",
+    });
+  if (error) {
+    throw error;
+  }
+};
+
+export const updateLocationSharingState = async (
+  groupId: string,
+  userId: string,
+  isSharing: boolean
+) => {
+  const { data, error } = await supabase
+    .from("group_member_locations")
+    .update({
+      is_sharing: isSharing,
+    })
+    .eq("group_id", groupId)
+    .eq("user_id", userId);
+  if (error) {
+    throw error;
+  }
 };

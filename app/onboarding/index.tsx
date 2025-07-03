@@ -6,14 +6,14 @@ import PagerView, {
 } from "react-native-pager-view";
 import Slide from "@/components/slide";
 import DotIndicator from "@/components/dotindicaotr";
-import { storage } from "@/utils/storage";
+import { secureStorage } from "@/utils/storage";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function Onboarding() {
   const session = useAuthStore((state) => state.session);
   // 온보딩이 끝났는지 확인하는 AsyncStorage
   const finishOnboarding = async () => {
-    await storage.setBoolean("onboardingSeen", true);
+    await secureStorage.setItem("onboardingSeen", "true");
     if (session) {
       router.replace("/maps"); // 이미 로그인을 한 경우 맵화면으로 이동
     } else {

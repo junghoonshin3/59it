@@ -1,5 +1,5 @@
 // components/login/LoginScreen.tsx
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Image, Alert, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -12,14 +12,15 @@ export default function SignIn() {
   const googleLoginMutation = useGoogleLogin();
   const kakaoLoginMutation = useKakaoLogin();
   // 로딩 상태 확인
-  const isLoading =
-    googleLoginMutation.isPending || kakaoLoginMutation.isPending;
+  const isLoading = useMemo(() => {
+    return googleLoginMutation.isPending || kakaoLoginMutation.isPending;
+  }, [googleLoginMutation.isPending, kakaoLoginMutation.isPending]);
 
   const handleGoogleLogin = (): void => {
     if (isLoading) return; // 로딩 중일 때는 실행하지 않음
     googleLoginMutation.mutate(undefined, {
       onSuccess: () => {
-        // router.replace("/maps");
+        router.replace("/maps");
       },
       onError: (error: Error) => {
         Alert.alert("오류", error.message || "구글 로그인에 실패했습니다.");

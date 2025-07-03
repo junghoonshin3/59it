@@ -3,7 +3,6 @@ import React from "react";
 import Topbar from "@/components/topbar";
 import { useRouter } from "expo-router";
 import ConfirmButton from "@/components/confirmbutton";
-import { stopLocationUpdatesAsync } from "@/services/locationService";
 import { useLogout } from "@/api/auth/hooks/useAuth";
 
 export default function MyPage() {
@@ -13,7 +12,6 @@ export default function MyPage() {
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: async () => {
-        await stopLocationUpdatesAsync();
         router.dismissAll();
         router.replace("/auth/signin");
       },

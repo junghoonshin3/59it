@@ -1,1 +1,1 @@
-export const LOCATION_TASK_NAME = "background-location-task";
+export const BACKGROUND_LOCATION_TASK = "background-location-sharing";

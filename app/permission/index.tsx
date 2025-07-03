@@ -2,12 +2,11 @@ import { View, Text, Image, Linking, StatusBar } from "react-native";
 import React, { useState } from "react";
 import PermissionItem from "@/components/permissionitem";
 import ConfirmButton from "@/components/confirmbutton";
-import { requestLocationPermissionsAsync } from "@/services/locationService";
+import { requestLocationPermissions } from "@/services/locationService";
 import { useRouter } from "expo-router";
 import CommonModal from "@/components/commonpopup";
-import { storage } from "@/utils/storage";
-import { useAuthStore } from "@/store/useAuthStore";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { secureStorage } from "@/utils/storage";
+import { supabase } from "@/services/supabase/supabaseService";
 
 export default function Permission() {
   const router = useRouter();
@@ -18,21 +17,20 @@ export default function Permission() {
     confirmText: "확인",
     onConfirm: () => {},
   });
-  const session = useAuthStore((state) => state.session);
 
   const requestLocationPermission = async () => {
     const { foregroundStatus, backgroundStatus, canAskAgain } =
-      await requestLocationPermissionsAsync();
-    const hasOnboarding = await storage.getBoolean("onboardingSeen");
-
+      await requestLocationPermissions();
+    const hasOnboarding = await secureStorage.getItem("onboardingSeen");
+    const { data } = await supabase.auth.getSession();
     // 둘 다 권한이 허용된 경우
     if (foregroundStatus === "granted" && backgroundStatus === "granted") {
       if (!hasOnboarding) {
         router.replace("/onboarding");
         return;
       }
-      console.log("session >>>>>>>>>>>>>>>>>>>>>> ", session?.access_token);
-      if (!session) {
+
+      if (!data || !data.session || !data.session.user) {
         router.replace("/auth/signin"); // 로그인을 위해 signin 화면으로 이동
         return;
       }

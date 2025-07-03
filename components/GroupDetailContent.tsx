@@ -18,15 +18,19 @@ import { Group } from "@/api/groups/types";
 type Props = {
   selectedGroup: Group | null;
   members: UserProfile[];
+  loading: boolean;
   onShareLocationStart: () => void;
   onShareLocationStop: () => void;
+  isCurrentlySharing: boolean;
 };
 
 export default function GroupDetailContent({
   selectedGroup,
   members,
+  loading = false,
   onShareLocationStart,
   onShareLocationStop,
+  isCurrentlySharing = false,
 }: Props) {
   const mapRef = useRef<MapView | null>(null);
   const scrollRef = useRef<BottomSheetFlatListMethods | null>(null);
@@ -136,7 +140,15 @@ export default function GroupDetailContent({
             />
           </MapView>
 
-          <ConfirmButton onPress={() => {}} title={"위치공유 시작"} />
+          <ConfirmButton
+            indicatorColor="#ffffff"
+            loading={loading}
+            disabled={loading}
+            onPress={
+              isCurrentlySharing ? onShareLocationStop : onShareLocationStart
+            }
+            title={isCurrentlySharing ? "위치공유 중단" : "위치공유 시작"}
+          />
         </View>
       </BottomSheetScrollView>
     )

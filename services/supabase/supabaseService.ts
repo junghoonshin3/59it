@@ -1,6 +1,7 @@
 import { createClient, User } from "@supabase/supabase-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GroupMember, GroupResponse } from "@/api/groups/types";
+import { LocationObject } from "expo-location";
 
 export type Profile = {
   id: string;
@@ -213,32 +214,33 @@ export const insertOrUpdateLocation = async ({
   return { data, error };
 };
 
-/**
- * 위치 공유 상태를 업데이트합니다.
- *
- * @param groupId - 그룹 ID
- * @param userId - 사용자 ID
- * @param isSharing - true면 위치 공유 시작, false면 중단
- * @returns 성공 여부 및 에러 정보
- */
-export async function updateLocationSharingStatus(
-  groupId: string,
-  userId: string,
-  isSharing: boolean
-): Promise<{ success: boolean; error?: string }> {
-  const { error } = await supabase
-    .from("group_members")
-    .update({ is_sharing_location: isSharing })
-    .eq("group_id", groupId)
-    .eq("user_id", userId);
+// /**
+//  * 위치 공유 상태를 업데이트합니다.
+//  *
+//  * @param groupId - 그룹 ID
+//  * @param userId - 사용자 ID
+//  * @param isSharing - true면 위치 공유 시작, false면 중단
+//  * @returns 성공 여부 및 에러 정보
+//  */
+// export async function updateLocationSharingStatus(
+//   groupId: string,
+//   userId: string,
+//   isSharing: boolean,
+//   location?: LocationObject
+// ): Promise<{ success: boolean; error?: string }> {
+//   const { error } = await supabase
+//     .from("group_members")
+//     .update({ is_sharing_location: isSharing })
+//     .eq("group_id", groupId)
+//     .eq("user_id", userId);
 
-  if (error) {
-    console.error("위치 공유 상태 업데이트 실패:", error.message);
-    return { success: false, error: error.message };
-  }
+//   if (error) {
+//     console.error("위치 공유 상태 업데이트 실패:", error.message);
+//     return { success: false, error: error.message };
+//   }
 
-  return { success: true };
-}
+//   return { success: true };
+// }
 
 // export const getGroupMemberDetails = async (
 //   groupId: string

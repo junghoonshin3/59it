@@ -7,11 +7,13 @@ import { LocaleConfig } from "react-native-calendars";
 import dayjs from "dayjs";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { LOCATION_TASK_NAME } from "@/constants/taskName";
+import { BACKGROUND_LOCATION_TASK } from "@/constants/taskName";
 import * as TaskManager from "expo-task-manager";
-import { storage } from "@/utils/storage";
-import { SharingGroup } from "@/types/types";
+import { secureStorage } from "@/utils/storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { LocationObject } from "expo-location";
+import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
+import { upsertGroupMemberLocation } from "@/api/groups/groups";
 SplashScreen.preventAutoHideAsync();
 
 LocaleConfig.locales["ko"] = {
@@ -63,26 +65,50 @@ GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 });
 
-TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }: any) => {
+// 백그라운드 태스크 정의
+TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
   if (error) {
-    console.error(error);
+    console.error("백그라운드 위치 업데이트 오류:", error);
     return;
   }
-  const sharingGroup = await storage.getObject<SharingGroup>(
-    "selectedSharingGroup"
-  );
-  console.log("백그라운드 위치 정보 >>> ", JSON.stringify(data));
-  const lastIndex = data.locations.length - 1;
-  console.log("데이터 크기 >>>", lastIndex);
-  if (!sharingGroup || !data) return;
 
-  // await insertOrUpdateLocation({
-  //   user_id: sharingGroup.user_id,
-  //   group_id: sharingGroup.group_id,
-  //   latitude: data.locations[lastIndex].coords.latitude,
-  //   longitude: data.locations[lastIndex].coords.longitude,
-  //   updated_at: new Date().toDateString(),
-  // });
+  if (data) {
+    const { locations } = data as { locations: LocationObject[] };
+    const location = locations[0];
+
+    if (location) {
+      try {
+        // 현재 공유 중인 그룹 확인
+        const { getCurrentSharingGroup, isCurrentlySharing } =
+          useLocationSharingStore.getState();
+        const currentGroupId = getCurrentSharingGroup();
+
+        if (currentGroupId && isCurrentlySharing()) {
+          // 사용자 ID는 SecureStore에서 가져오거나 별도로 저장
+          const userId = await secureStorage.getItem("user_id");
+
+          if (userId) {
+            await upsertGroupMemberLocation({
+              group_id: currentGroupId,
+              user_id: userId,
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+              updated_at: new Date(location.timestamp).toISOString(),
+              is_sharing: true,
+            });
+
+            console.log(`백그라운드 위치 업데이트 - 그룹 ${currentGroupId}:`, {
+              lat: location.coords.latitude,
+              lng: location.coords.longitude,
+              time: new Date(location.timestamp).toISOString(),
+            });
+          }
+        }
+      } catch (updateError) {
+        console.error("백그라운드 위치 업데이트 실패:", updateError);
+      }
+    }
+  }
 });
 
 const queryClient = new QueryClient();

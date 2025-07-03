@@ -7,6 +7,10 @@ import {
   updateMyGroup,
   uploadGroupImage,
 } from "../groups";
+import {
+  startLocationSharing,
+  stopLocationSharing,
+} from "@/services/locationService";
 
 export const useMyGroups = (userId: string | null | undefined) => {
   return useQuery({
@@ -88,6 +92,30 @@ export const useJoinGroup = () => {
     },
     onError: (error) => {
       console.log("useJoinGroup >>>>>>>>>>>>>> ", error);
+    },
+  });
+};
+
+export const useStartSharingLoation = () => {
+  return useMutation({
+    mutationFn: startLocationSharing,
+    onSuccess: (data) => {
+      return data;
+    },
+    onError: (error) => {
+      console.log(error);
+    },
+  });
+};
+
+export const useStopSharingLoation = () => {
+  return useMutation({
+    mutationFn: stopLocationSharing,
+    onSuccess: (data) => {
+      return data;
+    },
+    onError: (error) => {
+      console.log(error);
     },
   });
 };
