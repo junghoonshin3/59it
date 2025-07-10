@@ -119,7 +119,7 @@ export const joinGroup = async (joinReq: {
 
 export const getGroupMembers = async (
   groupId: string
-): Promise<UserProfile[]> => {
+): Promise<GroupMember[]> => {
   const { data, error } = await supabase
     .from("group_members")
     .select(
@@ -153,6 +153,7 @@ export const upsertGroupMemberLocation = async (
   if (error) {
     throw error;
   }
+  return data;
 };
 
 export const updateLocationSharingState = async (
@@ -170,4 +171,6 @@ export const updateLocationSharingState = async (
   if (error) {
     throw error;
   }
+
+  return data;
 };

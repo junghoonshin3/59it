@@ -27,7 +27,7 @@ export const useMyGroups = (userId: string | null | undefined) => {
   });
 };
 
-export const useGroupMembers = (groupId: string | null | undefined) => {
+export const useGroupMembers = (groupId: string | null) => {
   return useQuery({
     queryKey: ["groupMember", groupId],
     queryFn: async () => {
@@ -35,7 +35,6 @@ export const useGroupMembers = (groupId: string | null | undefined) => {
         throw new Error("Group Id is required");
       }
       const groupMember = await getGroupMembers(groupId);
-      console.log("useGroupMembers >>>>>>>>>>>>>>>>> ", groupMember);
       return groupMember;
     },
     enabled: !!groupId,
@@ -99,6 +98,8 @@ export const useJoinGroup = () => {
 export const useStartSharingLoation = () => {
   return useMutation({
     mutationFn: startLocationSharing,
+    retry: 1,
+    retryDelay: 1000 * 3,
     onSuccess: (data) => {
       return data;
     },

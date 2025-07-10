@@ -1,52 +1,41 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { secureStorage } from "@/utils/storage";
+import { Group } from "@/api/groups/types";
 interface LocationSharingState {
-  currentSharingGroupId: string | null;
+  currentSharingGroup: Group | null;
+  currentSharingUserId: string | null;
   isSharing: boolean;
-  sharingStartTime: number | null;
-  backgroundTaskName: string | null;
-
-  // Actions
-  startSharing: (groupId: string, taskName: string) => void;
+  startSharing: (group: Group, userId: string) => void;
   stopSharing: () => void;
-  getCurrentSharingGroup: () => string | null;
-  isCurrentlySharing: () => boolean;
-  getBackgroundTaskName: () => string | null;
 }
 
 export const useLocationSharingStore = create<LocationSharingState>()(
   persist(
     (set, get) => ({
-      currentSharingGroupId: null,
+      currentSharingGroup: null,
+      currentSharingUserId: null,
       isSharing: false,
-      sharingStartTime: null,
       backgroundTaskName: null,
-
-      startSharing: (groupId: string, taskName: string) => {
+      currentChannel: null,
+      startSharing: (group: Group, userId: string) => {
         set({
-          currentSharingGroupId: groupId,
+          currentSharingGroup: group,
+          currentSharingUserId: userId,
           isSharing: true,
-          sharingStartTime: Date.now(),
-          backgroundTaskName: taskName,
         });
       },
 
       stopSharing: () => {
         set({
-          currentSharingGroupId: null,
+          currentSharingGroup: null,
+          currentSharingUserId: null,
           isSharing: false,
-          sharingStartTime: null,
-          backgroundTaskName: null,
         });
       },
-
-      getCurrentSharingGroup: () => get().currentSharingGroupId,
-      isCurrentlySharing: () => get().isSharing,
-      getBackgroundTaskName: () => get().backgroundTaskName,
     }),
     {
-      name: "location-sharing-secure-storage",
+      name: "location-sharing",
       storage: createJSONStorage(() => secureStorage),
     }
   )

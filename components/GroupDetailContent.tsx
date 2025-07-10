@@ -1,23 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
-import { Image, Share, Text, View } from "react-native";
+import React, { useCallback, useEffect, useRef } from "react";
+import { Image, Text, View } from "react-native";
 import {
-  BottomSheetFlatListMethods,
   BottomSheetScrollView,
+  BottomSheetScrollViewMethods,
 } from "@gorhom/bottom-sheet";
-import MapView, { Region } from "react-native-maps";
+import MapView from "react-native-maps";
 import { CustomMarkerView } from "@/components/CustomMarkerView";
 import PlaceField from "@/components/PlaceField";
 import { UserAvatar } from "@/components/UserAvatar";
 import ConfirmButton from "./confirmbutton";
-import { useAuthStore } from "@/store/useAuthStore";
 import { shareGroupInviteCode } from "@/utils/share";
 import { FlatList } from "react-native-gesture-handler";
 import { UserProfile } from "@/api/auth/types";
-import { Group } from "@/api/groups/types";
+import { Group, GroupMember } from "@/api/groups/types";
 
 type Props = {
   selectedGroup: Group | null;
-  members: UserProfile[];
+  members: GroupMember[];
   loading: boolean;
   onShareLocationStart: () => void;
   onShareLocationStop: () => void;
@@ -33,15 +32,21 @@ export default function GroupDetailContent({
   isCurrentlySharing = false,
 }: Props) {
   const mapRef = useRef<MapView | null>(null);
-  const scrollRef = useRef<BottomSheetFlatListMethods | null>(null);
-  const { user } = useAuthStore();
-  const me = useMemo(() => {
-    if (!user?.id || !members || members.length === 0) return null;
-    return members.find((member) => member.id === user.id) ?? null;
-  }, [user?.id, members]);
+  const scrollRef = useRef<BottomSheetScrollViewMethods | null>(null);
+  useEffect(() => {
+    if (mapRef && mapRef.current && selectedGroup && scrollRef) {
+      mapRef.current.animateToRegion({
+        latitude: selectedGroup.latitude,
+        longitude: selectedGroup.longitude,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      });
+      scrollRef.current?.scrollTo({ x: 0, y: 0, animated: false });
+    }
+  }, [mapRef, selectedGroup, scrollRef]);
 
   const renderMember = useCallback(
-    ({ item }: { item: UserProfile }) => (
+    ({ item }: { item: GroupMember }) => (
       <View key={item.id}>
         <UserAvatar
           className="w-[68px] h-[68px] rounded-full"
@@ -67,23 +72,10 @@ export default function GroupDetailContent({
     });
   };
 
-  // 변화 감지 및 이동
-  useEffect(() => {
-    if (mapRef.current && selectedGroup) {
-      const region: Region = {
-        latitude: selectedGroup.latitude,
-        longitude: selectedGroup.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-      mapRef.current.animateToRegion(region, 1000); // 1초 동안 부드럽게 이동
-      scrollRef.current?.scrollToOffset({ offset: 0 });
-    }
-  }, [selectedGroup]);
-
   return (
     selectedGroup && (
       <BottomSheetScrollView
+        ref={scrollRef}
         contentContainerStyle={{ paddingHorizontal: 32, paddingVertical: 10 }}
       >
         <Text className="text-white text-[20px] font-semibold mb-[10px]">

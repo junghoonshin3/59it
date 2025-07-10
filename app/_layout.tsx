@@ -9,7 +9,6 @@ import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { BACKGROUND_LOCATION_TASK } from "@/constants/taskName";
 import * as TaskManager from "expo-task-manager";
-import { secureStorage } from "@/utils/storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LocationObject } from "expo-location";
 import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
@@ -78,31 +77,23 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
 
     if (location) {
       try {
-        // 현재 공유 중인 그룹 확인
-        const { getCurrentSharingGroup, isCurrentlySharing } =
-          useLocationSharingStore.getState();
-        const currentGroupId = getCurrentSharingGroup();
+        const groupId =
+          useLocationSharingStore.getState().currentSharingGroup?.id;
+        const userId = useLocationSharingStore.getState().currentSharingUserId;
+        if (groupId && userId) {
+          const locationObj = {
+            group_id: groupId,
+            user_id: userId,
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            is_sharing: true,
+          };
+          console.log(
+            `백그라운드 ~~~ ! locationObj >>>>>>>>>>>>>>>>> `,
+            locationObj
+          );
 
-        if (currentGroupId && isCurrentlySharing()) {
-          // 사용자 ID는 SecureStore에서 가져오거나 별도로 저장
-          const userId = await secureStorage.getItem("user_id");
-
-          if (userId) {
-            await upsertGroupMemberLocation({
-              group_id: currentGroupId,
-              user_id: userId,
-              latitude: location.coords.latitude,
-              longitude: location.coords.longitude,
-              updated_at: new Date(location.timestamp).toISOString(),
-              is_sharing: true,
-            });
-
-            console.log(`백그라운드 위치 업데이트 - 그룹 ${currentGroupId}:`, {
-              lat: location.coords.latitude,
-              lng: location.coords.longitude,
-              time: new Date(location.timestamp).toISOString(),
-            });
-          }
+          await upsertGroupMemberLocation(locationObj);
         }
       } catch (updateError) {
         console.error("백그라운드 위치 업데이트 실패:", updateError);

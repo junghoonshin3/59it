@@ -11,7 +11,8 @@ import {
 } from "../auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { login, logout } from "@react-native-seoul/kakao-login";
-import { supabase } from "@/services/supabase/supabaseService";
+import { stopLocationSharing } from "@/services/locationService";
+import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
 
 // 현재 세션 조회
 export const useSession = () => {
@@ -119,7 +120,6 @@ export const useLogout = () => {
       }
     },
     onSuccess: () => {
-      // 모든 캐시 데이터 삭제
       queryClient.clear();
     },
     onError: (error: Error) => {

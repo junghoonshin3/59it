@@ -13,10 +13,13 @@ export const useWatchLocation = (callBack: Location.LocationCallback) => {
         {
           accuracy: Location.Accuracy.High,
           mayShowUserSettingsDialog: true,
-          timeInterval: 5000,
+          timeInterval: 10000,
           distanceInterval: 100,
         },
-        callBack
+        callBack,
+        (error) => {
+          console.log("포그라운드 위치 오류  >>>>>>> ", error);
+        }
       );
     };
 

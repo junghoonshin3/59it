@@ -7,14 +7,17 @@ import PagerView, {
 import Slide from "@/components/slide";
 import DotIndicator from "@/components/dotindicaotr";
 import { secureStorage } from "@/utils/storage";
-import { useAuthStore } from "@/store/useAuthStore";
+import { supabase } from "@/services/supabase/supabaseService";
 
 export default function Onboarding() {
-  const session = useAuthStore((state) => state.session);
   // 온보딩이 끝났는지 확인하는 AsyncStorage
   const finishOnboarding = async () => {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     await secureStorage.setItem("onboardingSeen", "true");
-    if (session) {
+    if (session?.user) {
       router.replace("/maps"); // 이미 로그인을 한 경우 맵화면으로 이동
     } else {
       router.replace("/auth/signin"); // 로그인을 위해 signin 화면으로 이동
