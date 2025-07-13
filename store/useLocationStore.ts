@@ -1,7 +1,6 @@
-import { GroupMember } from "@/api/groups/types";
+import { GroupMember, GroupMemberLocation } from "@/api/groups/types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { GroupMemberWithLocation } from "./groups/types";
 export type Location = {
   latitude: number;
   longitude: number;
@@ -9,21 +8,20 @@ export type Location = {
 
 type LocationState = {
   location: Location | null;
-  groupMembers: GroupMemberWithLocation[] | null;
+  groupMembers: GroupMemberLocation[] | null;
   setLocation: (location: Location) => void;
-  setGroupMember: (members: GroupMemberWithLocation[]) => void;
+  setGroupMembers: (members: GroupMemberLocation[] | null) => void;
   updateGroupMemberLocation: (userId: string, location: Location) => void;
-  addGroupMember: (member: GroupMemberWithLocation) => void;
+  addGroupMember: (member: GroupMemberLocation) => void;
 };
 
 export const useLocationStore = create<LocationState>()(
   devtools((set, get) => ({
     location: null,
     groupMembers: null,
-
     setLocation: (location) => set(() => ({ location })),
 
-    setGroupMembers: (members: GroupMemberWithLocation[]) =>
+    setGroupMembers: (members: GroupMemberLocation[]) =>
       set(() => ({ groupMembers: members })),
 
     // 특정 멤버의 위치 업데이트
@@ -35,8 +33,7 @@ export const useLocationStore = create<LocationState>()(
           member.id === userId
             ? {
                 ...member,
-                latitude: location.latitude,
-                longitude: location.longitude,
+                location: location,
               }
             : member
         );
@@ -51,7 +48,7 @@ export const useLocationStore = create<LocationState>()(
 
         // 이미 존재하는 멤버인지 확인
         const existingMemberIndex = state.groupMembers.findIndex(
-          (m) => m.id === member.id
+          (m) => m.user_id === member.user_id
         );
 
         if (existingMemberIndex !== -1) {

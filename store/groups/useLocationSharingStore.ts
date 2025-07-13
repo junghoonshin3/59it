@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { secureStorage } from "@/utils/storage";
 import { Group } from "@/api/groups/types";
+
 interface LocationSharingState {
   currentSharingGroup: Group | null;
   currentSharingUserId: string | null;
@@ -16,7 +17,6 @@ export const useLocationSharingStore = create<LocationSharingState>()(
       currentSharingGroup: null,
       currentSharingUserId: null,
       isSharing: false,
-      backgroundTaskName: null,
       currentChannel: null,
       startSharing: (group: Group, userId: string) => {
         set({

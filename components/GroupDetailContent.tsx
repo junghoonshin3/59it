@@ -4,8 +4,7 @@ import {
   BottomSheetScrollView,
   BottomSheetScrollViewMethods,
 } from "@gorhom/bottom-sheet";
-import MapView from "react-native-maps";
-import { CustomMarkerView } from "@/components/CustomMarkerView";
+import MapView, { MapMarker, Marker } from "react-native-maps";
 import PlaceField from "@/components/PlaceField";
 import { UserAvatar } from "@/components/UserAvatar";
 import ConfirmButton from "./confirmbutton";
@@ -122,13 +121,13 @@ export default function GroupDetailContent({
             }}
             scrollEnabled={false}
           >
-            <CustomMarkerView
+            <Marker
+              title={selectedGroup.display_name}
+              image={{ uri: selectedGroup.group_image_url }}
               coordinate={{
                 latitude: selectedGroup.latitude,
                 longitude: selectedGroup.longitude,
               }}
-              imageUrl={selectedGroup.group_image_url}
-              name={selectedGroup.display_name}
             />
           </MapView>
 

@@ -1,7 +1,20 @@
 // 3. 수정된 Map 컴포넌트
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, View } from "react-native";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Alert, Image, Text, View } from "react-native";
+import MapView, {
+  Callout,
+  MapMarker,
+  Marker,
+  PROVIDER_GOOGLE,
+  Region,
+} from "react-native-maps";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getCurrentPositionAsync } from "@/services/locationService";
@@ -15,13 +28,12 @@ import CreateOrJoinGroupSheet from "@/components/CreateOrJoinGroupSheet";
 import CommonModal from "@/components/commonpopup";
 import NotificationBell from "@/components/NotificationBell";
 import { ImageButton } from "@/components/ImageButton";
-import { CustomMarkerView } from "@/components/CustomMarkerView";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { StyleProps } from "react-native-reanimated";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
 import ProfileButton from "@/components/ProfileButton";
 import { useUserProfile } from "@/api/auth/hooks/useAuth";
-import { Group, GroupMember } from "@/api/groups/types";
+import { Group } from "@/api/groups/types";
 import {
   useGroupMembers,
   useMyGroups,
@@ -30,7 +42,6 @@ import {
 } from "@/api/groups/hooks/useGroups";
 import { supabase } from "@/services/supabase/supabaseService";
 import { REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
-import { GroupMemberWithLocation } from "@/store/groups/types";
 
 export default function Map() {
   // refs
@@ -44,10 +55,11 @@ export default function Map() {
 
   const {
     location,
+    groupMembers,
     setLocation,
     addGroupMember,
     updateGroupMemberLocation,
-    setGroupMember,
+    setGroupMembers,
   } = useLocationStore();
   const startSharingLocationMutation = useStartSharingLoation();
   const stopSharingLocationMutation = useStopSharingLoation();
@@ -63,8 +75,6 @@ export default function Map() {
   const [isModalShareLoc, setIsModalShareLoc] = useState(false);
   const [showBackgroundButton, setShowBackgroundButton] = useState(true);
   const [subscribeStatus, setSubscribeStatus] = useState<boolean>(false);
-  // 위치 변경시 카메라 위치 설정
-  useSyncCameraWithLocation(mapRef);
 
   // 포그라운드 시 위치변경 훅
   useWatchLocation((location) => {
@@ -72,67 +82,37 @@ export default function Map() {
     setLocation(location.coords);
   });
 
-  // 그룹 멤버 데이터가 변경될 때 store에 저장
-  useEffect(() => {
-    if (groupMemberProfiles) {
-      // GroupMember를 GroupMemberWithLocation으로 변환
-      const membersWithLocation: GroupMemberWithLocation[] =
-        groupMemberProfiles.map((member) => ({
-          ...member,
-          latitude: undefined,
-          longitude: undefined,
-        }));
-      setGroupMember(membersWithLocation);
-    }
-  }, [groupMemberProfiles, setGroupMember]);
-
   useEffect(() => {
     if (!isSharing || !currentSharingGroup) return;
-
     const realtimeChannel = supabase
       .channel(`group-member-locations:${currentSharingGroup.id}`)
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "group_member_locations",
           filter: `group_id=eq.${currentSharingGroup.id}`,
         },
         (payload) => {
           // 새로운 위치 데이터 처리
-          const { user_id, latitude, longitude } = payload.new;
+          if (payload.eventType === "INSERT") {
+            const { user_id, group_id, latitude, longitude, update_at } =
+              payload.new;
+            console.log("INSERT 멤버 위치 데이터 수신 ", payload.new);
 
-          // 해당 유저의 프로필 정보 찾기
-          const profile = groupMemberProfiles?.find((v) => v.id === user_id);
-          if (profile) {
-            // 새로운 멤버 위치 정보로 업데이트
-            const updatedMember: GroupMemberWithLocation = {
-              ...profile,
-              latitude: latitude,
-              longitude: longitude,
-            };
-
-            addGroupMember(updatedMember);
-          }
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "group_member_locations",
-          filter: `group_id=eq.${currentSharingGroup.id}`,
-        },
-        (payload) => {
-          // 위치 업데이트 처리
-          const { user_id, latitude, longitude } = payload.new;
-
-          if (user_id && latitude && longitude) {
+            // addGroupMember({
+            //   user_id: user_id,
+            //   update_at: update_at,
+            //   latitude: latitude,
+            //   longitude: longitude,
+            // });
+          } else if (payload.eventType === "UPDATE") {
+            const { user_id, latitude, longitude } = payload.new;
+            console.log("UPDATE 멤버 위치 데이터 수신 ", payload.new);
             updateGroupMemberLocation(user_id, {
-              latitude,
-              longitude,
+              longitude: longitude,
+              latitude: latitude,
             });
           }
         }
@@ -151,6 +131,20 @@ export default function Map() {
     };
   }, [isSharing, currentSharingGroup]);
 
+  useEffect(() => {
+    if (!groupMemberProfiles || !isSharing) return;
+    setGroupMembers(groupMemberProfiles);
+  }, [groupMemberProfiles, isSharing]);
+
+  const onMapReady = () => {
+    if (!mapRef || !mapRef.current || !location) return;
+    mapRef.current.setRegion({
+      latitude: location.latitude,
+      longitude: location.longitude,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+  };
   // 현재 위치로 카메라 이동
   const getCurrentLocation = async () => {
     const currentPosition = await getCurrentPositionAsync();
@@ -163,6 +157,80 @@ export default function Map() {
       });
     }
   };
+
+  // 마커 렌더링 최적화
+  const renderGroupMemberMarkers = useMemo(() => {
+    if (!groupMembers || groupMembers.length === 0 || !user) return null;
+
+    return groupMembers
+      .filter((member) => member.id !== user?.id && member && member.location) // 위치 정보가 있는 멤버만
+      .map((member) => {
+        console.log("member >>>>>>>>>>>> ", member);
+        return (
+          <Marker
+            tracksViewChanges={false}
+            key={`member-${member.id}`}
+            coordinate={{
+              latitude: member.location!!.latitude,
+              longitude: member.location!!.longitude,
+            }}
+          >
+            <View
+              style={{
+                width: 50,
+                height: 50,
+                borderRadius: 25,
+                overflow: "hidden",
+                backgroundColor: "#0075FF",
+              }}
+            >
+              <Image
+                source={{ uri: member.profile_image }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  resizeMode: "cover",
+                }}
+              />
+            </View>
+          </Marker>
+        );
+      });
+  }, [groupMembers, user]);
+
+  const myLocationMarker = useMemo(() => {
+    if (!location || !user) return null;
+
+    return (
+      <Marker
+        tracksViewChanges={false}
+        key={user.id}
+        coordinate={{
+          latitude: location.latitude,
+          longitude: location.longitude,
+        }}
+      >
+        <View
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            overflow: "hidden",
+            backgroundColor: "#0075FF",
+          }}
+        >
+          <Image
+            source={{ uri: user.profile_image }}
+            style={{
+              width: "100%",
+              height: "100%",
+              resizeMode: "cover",
+            }}
+          />
+        </View>
+      </Marker>
+    );
+  }, [location, user]);
 
   // 그룹 클릭 시 상세 정보 로드
   const onClickGroup = useCallback((selectedGroup: Group) => {
@@ -211,21 +279,15 @@ export default function Map() {
     );
   };
 
-  if (!location) return null;
+  if (!mapRef || !location) return null;
 
   return (
     <View className="flex-1">
-      {/* 지도 */}
       <MapView
+        onMapReady={onMapReady}
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={{ flex: 1 }}
-        initialRegion={{
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }}
         showsBuildings={false}
         scrollDuringRotateOrZoomEnabled={false}
         rotateEnabled={false}
@@ -234,11 +296,8 @@ export default function Map() {
         maxZoomLevel={25}
         minZoomLevel={8}
       >
-        <CustomMarkerView
-          coordinate={location}
-          imageUrl={user?.profile_image}
-          name={user?.nickname}
-        />
+        {myLocationMarker}
+        {renderGroupMemberMarkers}
       </MapView>
 
       {/* 그룹 목록/상세 바텀시트 */}

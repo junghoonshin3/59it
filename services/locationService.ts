@@ -5,6 +5,7 @@ import * as TaskManager from "expo-task-manager";
 import { updateLocationSharingState } from "@/api/groups/groups";
 import { Group } from "@/api/groups/types";
 import { supabase } from "./supabase/supabaseService";
+import { useDerivedValue } from "react-native-reanimated";
 
 const option: Location.LocationOptions = {
   accuracy: Location.Accuracy.High,
@@ -54,7 +55,7 @@ export const requestLocationPermissions = async () => {
 };
 
 // 위치 공유 시작
-export const startLocationSharing = async (obj: {
+export const startLocationSharing = async (sharingObj: {
   selectedGroup: Group;
   userId: string;
 }) => {
@@ -73,9 +74,15 @@ export const startLocationSharing = async (obj: {
     deferredUpdatesDistance: 100,
   });
 
+  await updateLocationSharingState(
+    sharingObj.selectedGroup.id,
+    sharingObj.userId,
+    true
+  );
+
   useLocationSharingStore
     .getState()
-    .startSharing(obj.selectedGroup, obj.userId);
+    .startSharing(sharingObj.selectedGroup, sharingObj.userId);
 };
 
 // 위치 공유 중지

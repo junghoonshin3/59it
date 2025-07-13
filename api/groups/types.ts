@@ -1,3 +1,5 @@
+import { Location } from "@/store/useLocationStore";
+
 export type GroupRequest = {
   host_id: string;
   name: string;
@@ -53,6 +55,10 @@ export interface GroupMember {
   is_blocked: string;
   role: string;
   create_at: string;
+}
+
+export interface GroupMemberLocation extends GroupMember {
+  location?: Location;
 }
 
 export interface GroupMemberLocationRequest {
