@@ -102,6 +102,10 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
   }
 });
 
+if (typeof global.structuredClone === "undefined") {
+  global.structuredClone = (value) => JSON.parse(JSON.stringify(value));
+}
+
 const queryClient = new QueryClient();
 
 export default function RootLayout() {

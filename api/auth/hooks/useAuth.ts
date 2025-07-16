@@ -10,9 +10,12 @@ import {
   signOut,
 } from "../auth";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { login, logout } from "@react-native-seoul/kakao-login";
-import { stopLocationSharing } from "@/services/locationService";
-import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
+import {
+  login,
+  loginWithKakaoAccount,
+  logout,
+} from "@react-native-seoul/kakao-login";
+import { supabase } from "@/services/supabase/supabaseService";
 
 // 현재 세션 조회
 export const useSession = () => {
@@ -74,8 +77,17 @@ export const useKakaoLogin = () => {
 
   return useMutation({
     mutationFn: async () => {
-      const result = await login();
-      return await signInWithKakao(result.idToken);
+      const kakaoAccount = await login();
+      const credentials = {
+        provider: "kakao",
+        token: kakaoAccount.idToken,
+        access_token: kakaoAccount.accessToken,
+      };
+      const { data, error } = await supabase.auth.signInWithIdToken(
+        credentials
+      );
+      if (error) throw error;
+      return data;
     },
     onSuccess: async (data) => {
       const isProfile = await isUserProfile(data.user.id);

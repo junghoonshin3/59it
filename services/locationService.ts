@@ -64,12 +64,12 @@ export const startLocationSharing = async (sharingObj: {
     accuracy: Location.Accuracy.High,
     timeInterval: 10000, // 10초마다 업데이트
     distanceInterval: 100, // 10미터 이동시 업데이트
-    foregroundService: {
-      notificationTitle: "위치 공유 중",
-      notificationBody: "그룹 멤버들과 위치를 공유하고 있습니다.",
-      notificationColor: "#0075FF",
-      killServiceOnDestroy: true,
-    },
+    // foregroundService: {
+    //   notificationTitle: "위치 공유 중",
+    //   notificationBody: "그룹 멤버들과 위치를 공유하고 있습니다.",
+    //   notificationColor: "#0075FF",
+    //   killServiceOnDestroy: true,
+    // },
     deferredUpdatesInterval: 10000,
     deferredUpdatesDistance: 100,
   });

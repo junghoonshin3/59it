@@ -13,13 +13,15 @@ export const signInWithGoogle = async (idToken: string) => {
 };
 
 // 카카오 로그인 (커스텀 프로바이더로 처리)
-export const signInWithKakao = async (idToken: string) => {
+export const signInWithKakao = async (idToken: string, accessToken : string) => {
   const { data, error } = await supabase.auth.signInWithIdToken({
     provider: "kakao",
     token: idToken,
+    access_token : accessToken
   });
-
-  if (error) throw error;
+  if (error){
+    throw error;
+  }
   return data;
 };
 

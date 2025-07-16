@@ -80,6 +80,12 @@ export default function Map() {
   useWatchLocation((location) => {
     console.log("포그라운드에서 위치변경 >>>>>>>>>>> ", location.coords);
     setLocation(location.coords);
+    mapRef.current?.animateToRegion({
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+      longitudeDelta: 0.01,
+      latitudeDelta: 0.01,
+    });
   });
 
   useEffect(() => {
@@ -293,8 +299,6 @@ export default function Map() {
         rotateEnabled={false}
         zoomTapEnabled={false}
         toolbarEnabled={false}
-        maxZoomLevel={25}
-        minZoomLevel={8}
       >
         {myLocationMarker}
         {renderGroupMemberMarkers}
