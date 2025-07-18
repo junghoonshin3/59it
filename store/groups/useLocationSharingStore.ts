@@ -7,8 +7,10 @@ interface LocationSharingState {
   currentSharingGroup: Group | null;
   currentSharingUserId: string | null;
   isSharing: boolean;
-  startSharing: (group: Group, userId: string) => void;
-  stopSharing: () => void;
+  isSubscribe: boolean;
+  startBackgroundLocation: (group: Group, userId: string) => void;
+  stopBackgroundLocation: () => void;
+  setIsSubscribe: (status: boolean) => void;
 }
 
 export const useLocationSharingStore = create<LocationSharingState>()(
@@ -17,8 +19,8 @@ export const useLocationSharingStore = create<LocationSharingState>()(
       currentSharingGroup: null,
       currentSharingUserId: null,
       isSharing: false,
-      currentChannel: null,
-      startSharing: (group: Group, userId: string) => {
+      isSubscribe: false,
+      startBackgroundLocation: (group: Group, userId: string) => {
         set({
           currentSharingGroup: group,
           currentSharingUserId: userId,
@@ -26,16 +28,23 @@ export const useLocationSharingStore = create<LocationSharingState>()(
         });
       },
 
-      stopSharing: () => {
+      stopBackgroundLocation: () => {
         set({
           currentSharingGroup: null,
           currentSharingUserId: null,
           isSharing: false,
         });
       },
+
+      setIsSubscribe: (status: boolean) => {
+        set((state) => ({
+          ...state,
+          isSubscribe: status,
+        }));
+      },
     }),
     {
-      name: "location-sharing",
+      name: "current-sharing-group",
       storage: createJSONStorage(() => secureStorage),
     }
   )

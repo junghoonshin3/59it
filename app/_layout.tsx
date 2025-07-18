@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LocationObject } from "expo-location";
 import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
 import { upsertGroupMemberLocation } from "@/api/groups/groups";
+
 SplashScreen.preventAutoHideAsync();
 
 LocaleConfig.locales["ko"] = {
@@ -73,7 +74,7 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
 
   if (data) {
     const { locations } = data as { locations: LocationObject[] };
-    const location = locations[0];
+    const location = locations[locations.length - 1];
 
     if (location) {
       try {
@@ -86,7 +87,6 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
             user_id: userId,
             latitude: location.coords.latitude,
             longitude: location.coords.longitude,
-            is_sharing: true,
           };
           console.log(
             `백그라운드 ~~~ ! locationObj >>>>>>>>>>>>>>>>> `,
@@ -101,10 +101,6 @@ TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
     }
   }
 });
-
-if (typeof global.structuredClone === "undefined") {
-  global.structuredClone = (value) => JSON.parse(JSON.stringify(value));
-}
 
 const queryClient = new QueryClient();
 

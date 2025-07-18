@@ -127,10 +127,7 @@ export const getGroupMembers = async (
       profiles!inner (
         id,
         nickname,
-        profile_image,
-        is_blocked,
-        role,
-        created_at
+        profile_image
       )
     `
     ) // profiles 테이블 조인
@@ -139,7 +136,17 @@ export const getGroupMembers = async (
     console.error("그룹 멤버 조회 실패:", error);
     throw error;
   }
-  return data?.map((m: any) => m.profiles) || [];
+  return (
+    data?.map((m: any) => {
+      console.log(m);
+      return {
+        user_id: m.profiles.id,
+        group_id: groupId,
+        nickname: m.profiles.nickname,
+        profile_image: m.profiles.profile_image,
+      };
+    }) || []
+  );
 };
 
 export const upsertGroupMemberLocation = async (
@@ -153,24 +160,5 @@ export const upsertGroupMemberLocation = async (
   if (error) {
     throw error;
   }
-  return data;
-};
-
-export const updateLocationSharingState = async (
-  groupId: string,
-  userId: string,
-  isSharing: boolean
-) => {
-  const { data, error } = await supabase
-    .from("group_member_locations")
-    .update({
-      is_sharing: isSharing,
-    })
-    .eq("group_id", groupId)
-    .eq("user_id", userId);
-  if (error) {
-    throw error;
-  }
-
   return data;
 };

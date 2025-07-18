@@ -63,13 +63,6 @@ export default function GroupListContent({
         <Text className="text-white text-[20px] font-semibold ">
           나의 모임들
         </Text>
-        {isCurrentlySharing && (
-          <View className="bg-green-500 p-[5px] ms-[10px] rounded-[10px]">
-            <Text className="text-white text-[10px] font-semibold">
-              위치 공유중
-            </Text>
-          </View>
-        )}
         <View className="flex-1" />
         <TouchableOpacity onPress={addGroup} disabled={loading}>
           <Image

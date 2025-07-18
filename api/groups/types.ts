@@ -48,13 +48,8 @@ export interface Group {
 export interface GroupMember {
   group_id: string;
   user_id: string;
-  joined_at: string;
-  id: string;
   nickname: string;
   profile_image: string;
-  is_blocked: string;
-  role: string;
-  create_at: string;
 }
 
 export interface GroupMemberLocation extends GroupMember {
@@ -67,5 +62,4 @@ export interface GroupMemberLocationRequest {
   latitude?: number;
   longitude?: number;
   updated_at?: string;
-  is_sharing: boolean;
 }

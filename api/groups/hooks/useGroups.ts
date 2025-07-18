@@ -11,6 +11,7 @@ import {
   startLocationSharing,
   stopLocationSharing,
 } from "@/services/locationService";
+import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
 
 export const useMyGroups = (userId: string | null | undefined) => {
   return useQuery({

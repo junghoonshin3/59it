@@ -4,14 +4,14 @@ import {
   BottomSheetScrollView,
   BottomSheetScrollViewMethods,
 } from "@gorhom/bottom-sheet";
-import MapView, { MapMarker, Marker } from "react-native-maps";
+import MapView from "react-native-maps";
 import PlaceField from "@/components/PlaceField";
 import { UserAvatar } from "@/components/UserAvatar";
 import ConfirmButton from "./confirmbutton";
 import { shareGroupInviteCode } from "@/utils/share";
 import { FlatList } from "react-native-gesture-handler";
-import { UserProfile } from "@/api/auth/types";
 import { Group, GroupMember } from "@/api/groups/types";
+import CustomMarker from "./CustomMarker";
 
 type Props = {
   selectedGroup: Group | null;
@@ -46,12 +46,12 @@ export default function GroupDetailContent({
 
   const renderMember = useCallback(
     ({ item }: { item: GroupMember }) => (
-      <View key={item.id}>
+      <View key={item.user_id}>
         <UserAvatar
           className="w-[68px] h-[68px] rounded-full"
           imageUrl={item.profile_image}
         />
-        {selectedGroup?.host_id === item.id ? (
+        {selectedGroup?.host_id === item.user_id ? (
           <Image
             tintColor={"#FFD700"}
             className="absolute top-0 left-0"
@@ -83,7 +83,7 @@ export default function GroupDetailContent({
 
         <FlatList
           data={members}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.user_id}
           renderItem={renderMember}
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -121,10 +121,10 @@ export default function GroupDetailContent({
             }}
             scrollEnabled={false}
           >
-            <Marker
-              title={selectedGroup.display_name}
-              image={{ uri: selectedGroup.group_image_url }}
-              coordinate={{
+            <CustomMarker
+              nickName={selectedGroup.display_name}
+              profileUrl={selectedGroup.group_image_url}
+              location={{
                 latitude: selectedGroup.latitude,
                 longitude: selectedGroup.longitude,
               }}
