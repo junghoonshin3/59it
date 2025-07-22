@@ -34,10 +34,14 @@ import {
   useStartSharingLoation,
   useStopSharingLoation,
 } from "@/api/groups/hooks/useGroups";
-import { supabase } from "@/services/supabase/supabaseService";
-import { REALTIME_SUBSCRIBE_STATES } from "@supabase/supabase-js";
 import CustomMarker from "@/components/CustomMarker";
 import { useSubscribeGroupMemberLocations } from "@/hooks/useSubscribeGroupMemberLocations";
+import ConnectionStatus from "@/components/ConnectionStatus";
+import {
+  getRegisteredTasksAsync,
+  getTaskOptionsAsync,
+} from "expo-task-manager";
+import { BACKGROUND_LOCATION_TASK } from "@/constants/taskName";
 
 export default function Map() {
   // refs
@@ -50,6 +54,7 @@ export default function Map() {
     isSharing,
     startBackgroundLocation,
     stopBackgroundLocation,
+    subscribeStatus,
   } = useLocationSharingStore();
   const { data: user } = useUserProfile();
   const { data: myGroups, isLoading } = useMyGroups(user?.id);
@@ -75,12 +80,12 @@ export default function Map() {
     setLocation(location.coords);
   });
 
-  useSubscribeGroupMemberLocations();
-
   useEffect(() => {
     if (!isGroupMemberSuccess) return;
     setGroupMembers(groupMemberProfiles);
   }, [isGroupMemberSuccess]);
+
+  useSubscribeGroupMemberLocations();
 
   // 현재 위치로 카메라 이동
   const getCurrentLocation = async () => {
@@ -302,6 +307,11 @@ export default function Map() {
         onPress={() => {
           router.navigate("/profile");
         }}
+      />
+      <ConnectionStatus
+        top={insets.top + 5}
+        isSharing={isSharing}
+        subscribeState={subscribeStatus}
       />
     </View>
   );

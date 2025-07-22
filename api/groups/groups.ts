@@ -138,7 +138,6 @@ export const getGroupMembers = async (
   }
   return (
     data?.map((m: any) => {
-      console.log(m);
       return {
         user_id: m.profiles.id,
         group_id: groupId,

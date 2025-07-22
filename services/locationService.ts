@@ -62,6 +62,10 @@ export const startLocationSharing = async (params: {
     distanceInterval: 100, // 10미터 이동시 업데이트
     deferredUpdatesInterval: 10000,
     deferredUpdatesDistance: 100,
+    foregroundService: {
+      notificationTitle: "위치공유중",
+      notificationBody: "위치공유시작",
+    },
   });
 };
 

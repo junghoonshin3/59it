@@ -8,7 +8,6 @@
     "scheme": "com.anonymous.x59it",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.x59it",

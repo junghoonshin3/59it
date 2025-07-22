@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import InviteCodeInput from "@/components/InviteCodeInput";
 import ConfirmButton from "@/components/confirmbutton";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { findGroupByInviteCode } from "@/services/supabase/supabaseService";
 import CommonModal from "@/components/commonpopup";
 import { useUserProfile } from "@/api/auth/hooks/useAuth";
 import { useJoinGroup } from "@/api/groups/hooks/useGroups";
