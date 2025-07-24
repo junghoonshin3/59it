@@ -1,4 +1,0 @@
-Deno.serve(async (req)=>{
-    
-    
-})
