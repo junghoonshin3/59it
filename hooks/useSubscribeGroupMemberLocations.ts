@@ -7,6 +7,8 @@ import {
 } from "@supabase/supabase-js";
 import { useLocationStore } from "@/store/useLocationStore";
 import { AppState } from "react-native";
+import { getUserProfile } from "@/api/auth/auth";
+import { GroupMemberLocation } from "@/api/groups/types";
 
 export const useSubscribeGroupMemberLocations = () => {
   const {
@@ -15,11 +17,11 @@ export const useSubscribeGroupMemberLocations = () => {
     isSharing,
     setSubscribeStatus,
   } = useLocationSharingStore();
-  const { updateGroupMemberLocation, insertGroupMember } = useLocationStore();
+  const { updateGroupMemberLocation, insertGroupMember, hasGroupMember } =
+    useLocationStore();
 
   const [isConnected, setIsConnected] = useState(false);
   const [currentAppState, setCurrentAppState] = useState(AppState.currentState);
-
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",
@@ -47,16 +49,24 @@ export const useSubscribeGroupMemberLocations = () => {
           table: "group_member_locations",
           filter: `group_id=eq.${currentSharingGroup.id}`,
         },
-        (payload) => {
+        async (payload) => {
           if (payload.eventType === "INSERT") {
             const { user_id, group_id, latitude, longitude, update_at } =
               payload.new;
             console.log("INSERT 멤버 위치 데이터 수신 ", payload.new);
-            // insertGroupMember({
-            //   user_id: user_id,
-            //   group_id: group_id,
-            //   location: { latitude: latitude, longitude: longitude },
-            // });
+            const userProfile = await getUserProfile({ user_id });
+            if (!userProfile) throw Error("유저정보없음");
+            const groupMember: GroupMemberLocation = {
+              user_id: userProfile.id,
+              group_id: group_id,
+              nickname: userProfile.nickname,
+              profile_image: userProfile.profile_image ?? "",
+              location: {
+                latitude: latitude,
+                longitude: longitude,
+              },
+            };
+            insertGroupMember(groupMember);
           } else if (payload.eventType === "UPDATE") {
             const { user_id, latitude, longitude } = payload.new;
             console.log(`UPDATE 멤버 위치 데이터 수신 ${user_id}`, payload.new);

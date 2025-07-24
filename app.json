@@ -36,7 +36,8 @@
         "FOREGROUND_SERVICE_LOCATION"
       ],
       "edgeToEdgeEnabled": true,
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -78,7 +79,9 @@
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0",
-            "kotlinVersion": "1.9.25"
+            "kotlinVersion": "2.0.21",
+            "enableProguardInReleaseBuilds": true,
+            "extraProguardRules": "-keep class com.kakao.sdk.**.model.* { <fields>; } -keep class * extends com.google.gson.TypeAdapter -dontwarn org.bouncycastle.jsse.** -dontwarn org.conscrypt.* -dontwarn org.openjsse.**"
           },
           "ios": {
             "deploymentTarget": "15.1"
@@ -98,7 +101,8 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
         }
-      ]
+      ],
+      ["@react-native-google-signin/google-signin"]
     ],
     "experiments": {
       "typedRoutes": true

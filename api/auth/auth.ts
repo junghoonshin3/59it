@@ -1,5 +1,5 @@
 import { supabase } from "@/services/supabase/supabaseService";
-import { UserProfile } from "./types";
+import { UserProfile, UserProfileRequest } from "./types";
 
 // 구글 로그인
 export const signInWithGoogle = async (idToken: string) => {
@@ -13,13 +13,13 @@ export const signInWithGoogle = async (idToken: string) => {
 };
 
 // 카카오 로그인 (커스텀 프로바이더로 처리)
-export const signInWithKakao = async (idToken: string, accessToken : string) => {
+export const signInWithKakao = async (idToken: string, accessToken: string) => {
   const { data, error } = await supabase.auth.signInWithIdToken({
     provider: "kakao",
     token: idToken,
-    access_token : accessToken
+    access_token: accessToken,
   });
-  if (error){
+  if (error) {
     throw error;
   }
   return data;
@@ -48,13 +48,32 @@ export const getCurrentUser = async () => {
     error,
   } = await supabase.auth.getUser();
   if (error) throw error;
-  return user;
+  if (!user) throw Error("인증된 유저가 아닙니다.");
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single<UserProfile>();
+
+  if(profileError) throw profileError
+
+  return profile;
 };
 
 export const createUserProfile = async (user: UserProfile) => {
   const { data, error } = await supabase
     .from("profiles")
     .insert<UserProfile>(user);
+  if (error) throw error;
+  return data;
+
+};
+
+export const updateUserProfile = async (user: UserProfile) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert<UserProfile>(user);
   if (error) throw error;
   return data;
 };
@@ -68,24 +87,14 @@ export const isUserProfile = async (userId: string) => {
   return (count ?? 0) > 0;
 };
 
-export const getUserProfile = async (): Promise<UserProfile | null> => {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError) {
-    throw new Error(`인증 오류: ${authError.message}`);
-  }
-
-  if (!user) {
-    return null; // 로그인하지 않은 경우
-  }
-
+export const getUserProfile = async ({
+  user_id,
+}: UserProfileRequest): Promise<UserProfile | null> => {
   // profiles 테이블에서 사용자 프로필 조회
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", user_id)
     .single();
 
   if (error) {
@@ -94,3 +103,15 @@ export const getUserProfile = async (): Promise<UserProfile | null> => {
 
   return data;
 };
+
+export const isValidToken = async (token: string, userId: string) : Promise<boolean>=>{
+  const {data, error} = await supabase.from("profiles")
+    .select("expo_push_token")
+    .eq("id", userId)
+    .single();
+
+  if(error) throw error
+  console.log("registerToken >> ",data.expo_push_token)
+
+  return token === data.expo_push_token
+}

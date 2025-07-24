@@ -21,7 +21,7 @@ import { fetchPlaceSuggestions } from "@/api/googlePlaces";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { GroupRequest } from "@/api/groups/types";
-import { useUserProfile } from "@/api/auth/hooks/useAuth";
+import { useUser } from "@/api/auth/hooks/useAuth";
 import { useCreateGroupStore } from "@/store/groups/useGroupStore";
 import { useCreateMyGroup } from "@/api/groups/hooks/useGroups";
 import { pickImage } from "@/utils/pickImage";
@@ -36,7 +36,7 @@ export default function CreateGroup() {
   const [searchPlaces, setSearchPlaces] = useState<Place[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const { data: user } = useUserProfile();
+  const { data: user } = useUser();
   const creatMyGroupMutation = useCreateMyGroup();
   const {
     groupNm,

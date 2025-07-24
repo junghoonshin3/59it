@@ -7,14 +7,12 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Alert, Image, Text, View } from "react-native";
+import { View } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 import { router } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { getCurrentPositionAsync } from "@/services/locationService";
 import { useLocationStore } from "@/store/useLocationStore";
 import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
-import { useSyncCameraWithLocation } from "@/hooks/useSyncCameraWithLocation";
 import CustomBottomSheet from "@/components/CustomBottomSheet";
 import GroupListContent from "@/components/GroupListContent";
 import GroupDetailContent from "@/components/GroupDetailContent";
@@ -26,7 +24,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { StyleProps } from "react-native-reanimated";
 import { useWatchLocation } from "@/hooks/useWatchLocation";
 import ProfileButton from "@/components/ProfileButton";
-import { useUserProfile } from "@/api/auth/hooks/useAuth";
+import { useUser } from "@/api/auth/hooks/useAuth";
 import { Group } from "@/api/groups/types";
 import {
   useGroupMembers,
@@ -37,11 +35,9 @@ import {
 import CustomMarker from "@/components/CustomMarker";
 import { useSubscribeGroupMemberLocations } from "@/hooks/useSubscribeGroupMemberLocations";
 import ConnectionStatus from "@/components/ConnectionStatus";
-import {
-  getRegisteredTasksAsync,
-  getTaskOptionsAsync,
-} from "expo-task-manager";
-import { BACKGROUND_LOCATION_TASK } from "@/constants/taskName";
+import { registerForPushNotificationsAsync } from "@/utils/push";
+import * as Notifications from "expo-notifications";
+import { isValidToken, updateUserProfile } from "@/api/auth/auth";
 
 export default function Map() {
   // refs
@@ -56,7 +52,7 @@ export default function Map() {
     stopBackgroundLocation,
     subscribeStatus,
   } = useLocationSharingStore();
-  const { data: user } = useUserProfile();
+  const { data: user } = useUser();
   const { data: myGroups, isLoading } = useMyGroups(user?.id);
 
   const { location, groupMembers, setLocation, setGroupMembers } =
@@ -86,6 +82,42 @@ export default function Map() {
   }, [isGroupMemberSuccess]);
 
   useSubscribeGroupMemberLocations();
+
+  useEffect(() => {
+    if (!user) return;
+    registerForPushNotificationsAsync()
+      .then(async (token) => {
+        if (!token) throw Error("Expo Push Token is not receive");
+        await isValid(token, user.id);
+      })
+      .catch((error: any) => console.log(`error >> ${JSON.stringify(error)}`));
+
+    const notificationListener = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log("notification >>>> ", notification);
+      }
+    );
+
+    const responseListener =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(response);
+      });
+
+    return () => {
+      notificationListener.remove();
+      responseListener.remove();
+    };
+  }, [user]);
+
+  const isValid = async (token: string, userId: string) => {
+    const valid = await isValidToken(token, userId);
+    console.log("등록된 토큰하고 비교한 결과는? ", valid);
+    if (valid) return;
+    await updateUserProfile({
+      ...user!!,
+      expo_push_token: token,
+    });
+  };
 
   // 현재 위치로 카메라 이동
   const getCurrentLocation = async () => {
@@ -140,10 +172,7 @@ export default function Map() {
   const handleConfirmStartSharing = useCallback(async () => {
     if (!selectedGroup || !user || !isGroupMemberSuccess) return;
     try {
-      await startSharingLocationMutation.mutateAsync({
-        selectedGroup: selectedGroup,
-        userId: user.id,
-      });
+      await startSharingLocationMutation.mutateAsync();
       startBackgroundLocation(selectedGroup, user.id);
     } catch (error) {
       console.error("위치 공유 시작 오류:", error);

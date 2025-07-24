@@ -1,25 +1,14 @@
-import { useUserProfile } from "@/api/auth/hooks/useAuth";
-import {
-  useCreateMyGroup,
-  useGroupImage,
-  useUpdateMyGroup,
-} from "@/api/groups/hooks/useGroups";
-import { GroupRequest } from "@/api/groups/types";
 import ConfirmButton from "@/components/confirmbutton";
-import FormField from "@/components/formfield";
+
 import InviteCodeText from "@/components/InviteCodeText";
 import Topbar from "@/components/topbar";
-import { useCreateGroupStore } from "@/store/groups/useGroupStore";
-import { pickImage } from "@/utils/pickImage";
 import { shareGroupInviteCode } from "@/utils/share";
-import { ImagePickerAsset } from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { View, Text } from "react-native";
 
 export default function CreateCode() {
   const router = useRouter();
-  const { data: user } = useUserProfile();
   const { inviteCode, groupName } = useLocalSearchParams<{
     inviteCode: string;
     groupName: string;

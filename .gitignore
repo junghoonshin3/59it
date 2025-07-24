@@ -37,3 +37,7 @@ yarn-error.*
 
 app-example
 app.config.js
+
+#google play service
+it-458610-firebase-adminsdk-fbsvc-0949ca87ba.json
+google-services.json

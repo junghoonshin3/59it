@@ -3,7 +3,7 @@ import React from "react";
 import Topbar from "@/components/topbar";
 import { useRouter } from "expo-router";
 import ConfirmButton from "@/components/confirmbutton";
-import { useLogout, useUserProfile } from "@/api/auth/hooks/useAuth";
+import { useLogout } from "@/api/auth/hooks/useAuth";
 import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
 import { stopLocationSharing } from "@/services/locationService";
 import { supabase } from "@/services/supabase/supabaseService";

@@ -51,10 +51,7 @@ export const requestLocationPermissions = async () => {
 };
 
 // 위치 공유 시작
-export const startLocationSharing = async (params: {
-  selectedGroup: Group;
-  userId: string;
-}) => {
+export const startLocationSharing = async () => {
   // 백그라운드 위치 추적 시작
   await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
     accuracy: Location.Accuracy.High,

@@ -6,13 +6,13 @@ import "react-native-get-random-values";
 import { LocaleConfig } from "react-native-calendars";
 import dayjs from "dayjs";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { BACKGROUND_LOCATION_TASK } from "@/constants/taskName";
 import * as TaskManager from "expo-task-manager";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LocationObject } from "expo-location";
 import { useLocationSharingStore } from "@/store/groups/useLocationSharingStore";
 import { upsertGroupMemberLocation } from "@/api/groups/groups";
+import * as Notifications from "expo-notifications";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -65,6 +65,15 @@ GoogleSignin.configure({
   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 });
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 // 백그라운드 태스크 정의
 TaskManager.defineTask(BACKGROUND_LOCATION_TASK, async ({ data, error }) => {
   if (error) {
@@ -114,30 +123,28 @@ export default function RootLayout() {
           backgroundColor: "#181A20",
         }}
       >
-        <BottomSheetModalProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              statusBarStyle: "light",
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            statusBarStyle: "light",
+            contentStyle: {
+              paddingTop: insets.top,
+              paddingBottom: insets.bottom,
+              backgroundColor: "#181A20",
+            },
+          }}
+        >
+          <Stack.Screen
+            name="maps/index"
+            options={{
+              statusBarStyle: "dark",
               contentStyle: {
-                paddingTop: insets.top,
                 paddingBottom: insets.bottom,
                 backgroundColor: "#181A20",
               },
             }}
-          >
-            <Stack.Screen
-              name="maps/index"
-              options={{
-                statusBarStyle: "dark",
-                contentStyle: {
-                  paddingBottom: insets.bottom,
-                  backgroundColor: "#181A20",
-                },
-              }}
-            />
-          </Stack>
-        </BottomSheetModalProvider>
+          />
+        </Stack>
         {/* <StatusBar style="light" /> */}
       </GestureHandlerRootView>
     </QueryClientProvider>

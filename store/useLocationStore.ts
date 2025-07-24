@@ -23,17 +23,9 @@ type LocationState = {
   updateGroupMemberLocation: (userId: string, location: Location) => void;
   deleteGroupMember: (userId: string) => void;
 
-  // 배치 작업들 (여러 멤버를 한번에 처리)
-  batchInsertGroupMembers: (members: GroupMemberLocation[]) => void;
-  batchUpdateGroupMembers: (
-    updates: { userId: string; location: Location }[]
-  ) => void;
-  batchDeleteGroupMembers: (userIds: string[]) => void;
-
   // 유틸리티 함수들
   getGroupMember: (userId: string) => GroupMemberLocation | undefined;
   hasGroupMember: (userId: string) => boolean;
-  getGroupMembersArray: () => GroupMemberLocation[];
   clearGroupMembers: () => void;
 };
 
@@ -136,87 +128,6 @@ export const useLocationStore = create<LocationState>()(
         };
       }),
 
-    // BATCH INSERT: 여러 멤버를 한번에 추가
-    batchInsertGroupMembers: (members) =>
-      set((state) => {
-        const newMap = new Map(state.groupMembersMap);
-        const newMembers: GroupMemberLocation[] = [];
-
-        members.forEach((member) => {
-          if (!newMap.has(member.user_id)) {
-            newMap.set(member.user_id, member);
-            newMembers.push(member);
-          }
-        });
-
-        if (newMembers.length === 0) {
-          return state; // 변경사항이 없으면 상태 유지
-        }
-
-        return {
-          groupMembersMap: newMap,
-          groupMembers: [...state.groupMembers, ...newMembers],
-        };
-      }),
-
-    // BATCH UPDATE: 여러 멤버의 위치를 한번에 업데이트
-    batchUpdateGroupMembers: (updates) =>
-      set((state) => {
-        const newMap = new Map(state.groupMembersMap);
-        const updateMap = new Map<string, Location>();
-
-        // 업데이트할 항목들을 Map으로 변환 (O(1) 접근)
-        updates.forEach(({ userId, location }) => {
-          updateMap.set(userId, location);
-        });
-
-        let hasChanges = false;
-        const newArray = state.groupMembers.map((member) => {
-          const newLocation = updateMap.get(member.user_id);
-          if (newLocation) {
-            hasChanges = true;
-            const updatedMember = {
-              ...member,
-              location: newLocation,
-              updated_at: new Date().toISOString(),
-            };
-            newMap.set(member.user_id, updatedMember);
-            return updatedMember;
-          }
-          return member;
-        });
-
-        if (!hasChanges) {
-          return state; // 변경사항이 없으면 상태 유지
-        }
-
-        return {
-          groupMembersMap: newMap,
-          groupMembers: newArray,
-        };
-      }),
-
-    // BATCH DELETE: 여러 멤버를 한번에 삭제
-    batchDeleteGroupMembers: (userIds) =>
-      set((state) => {
-        const deleteSet = new Set(userIds);
-        const newMap = new Map(state.groupMembersMap);
-
-        // 삭제할 항목들을 Map에서 제거
-        userIds.forEach((userId) => {
-          newMap.delete(userId);
-        });
-
-        const newArray = state.groupMembers.filter(
-          (member) => !deleteSet.has(member.user_id)
-        );
-
-        return {
-          groupMembersMap: newMap,
-          groupMembers: newArray,
-        };
-      }),
-
     // 유틸리티 함수들
     getGroupMember: (userId) => {
       return get().groupMembersMap.get(userId);
@@ -224,10 +135,6 @@ export const useLocationStore = create<LocationState>()(
 
     hasGroupMember: (userId) => {
       return get().groupMembersMap.has(userId);
-    },
-
-    getGroupMembersArray: () => {
-      return get().groupMembers;
     },
 
     clearGroupMembers: () =>

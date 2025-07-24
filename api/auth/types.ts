@@ -5,4 +5,9 @@ export interface UserProfile {
   is_blocked: boolean;
   role: string;
   create_at?: string;
+  expo_push_token?:string;
 }
+
+export type UserProfileRequest = {
+  user_id: string;
+};

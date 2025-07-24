@@ -16,6 +16,7 @@ import {
   logout,
 } from "@react-native-seoul/kakao-login";
 import { supabase } from "@/services/supabase/supabaseService";
+import { UserProfileRequest } from "../types";
 
 // 현재 세션 조회
 export const useSession = () => {
@@ -140,10 +141,10 @@ export const useLogout = () => {
   });
 };
 
-export const useUserProfile = () => {
+export const useUserProfile = ({ user_id }: UserProfileRequest) => {
   return useQuery({
     queryKey: ["user", "profile"],
-    queryFn: getUserProfile,
+    queryFn: () => getUserProfile({ user_id }),
     retry: 1,
     enabled: true, // 항상 실행
   });

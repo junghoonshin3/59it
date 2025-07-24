@@ -6,7 +6,7 @@ import InviteCodeInput from "@/components/InviteCodeInput";
 import ConfirmButton from "@/components/confirmbutton";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import CommonModal from "@/components/commonpopup";
-import { useUserProfile } from "@/api/auth/hooks/useAuth";
+import { useUser } from "@/api/auth/hooks/useAuth";
 import { useJoinGroup } from "@/api/groups/hooks/useGroups";
 
 interface ErrorState {
@@ -17,7 +17,7 @@ interface ErrorState {
 
 export default function JoinGroup() {
   const router = useRouter();
-  const { data: user } = useUserProfile();
+  const { data: user } = useUser();
   const [code, setCode] = useState<string[]>(() => Array(6).fill(""));
   const [errorObj, setErrorObj] = useState<ErrorState | null>(null);
   const joinGroupMutation = useJoinGroup();
